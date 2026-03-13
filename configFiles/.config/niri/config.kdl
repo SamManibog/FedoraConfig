@@ -394,7 +394,7 @@ binds {
 
     // Suggested binds for running programs: terminal, app launcher, screen locker.
     Mod+Return hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
-    Mod+A hotkey-overlay-title="Run an Application: wofi" { spawn-sh "pkill wofi; wofi --show drun -a --normal-window"; }
+    Mod+A hotkey-overlay-title="Run an Application: wofi" { spawn-sh "pkill wofi || wofi --show drun -a --normal-window"; }
     Mod+I hotkey-overlay-title="Open a Browser: firefox" { spawn "firefox"; }
     Mod+S hotkey-overlay-title="Restart Waybar" { spawn-sh "systemctl --user restart waybar"; }
     Mod+M hotkey-overlay-title="Open Control Panel" { spawn-sh "swaync-client -t -sw"; }
