@@ -1,0 +1,5 @@
+[Libinput][1267][12598][ELAN0B00:00 04F3:3136 Touchpad]
+NaturalScroll=true
+PointerAcceleration=0.450
+PointerAccelerationProfile=2
+ScrollFactor=0.3
