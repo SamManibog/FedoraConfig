@@ -3,11 +3,11 @@
 ## Installation
 
 Ensure git is installed then run the following command:
-'''bash
+```bash
 git clone https://github.com/SamManibog/FedoraConfig ~/FedoraConfig
 cd ~/FedoraConfig
 python setup.py
-'''
+```
 
 ## File Structure
 
