@@ -1,6 +1,6 @@
-#!/bin/bash python
-
 import os
+from pathlib import Path
+import tempfile
 import subprocess
 
 # =======================================================================================================
@@ -28,14 +28,17 @@ pkgs = [
         "after": "git clone https://github.com/SamManibog/nvim ~/.config/nvim",
     },
     {
-        "pkg": [ "dms", "niri" ],
-        "copr": "avengemedia/dms",
+        "pkg": [ "niri", "waybar", "wpctl", "wofi" ],
         "after": "systemctl --user add-wants niri.service dms", 
     },
     {
         "pkg": "yazi",
         "copr": "varlad/yazi",
     },
+]
+
+nerdFonts = [
+    "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/CommitMono.zip",
 ]
 
 # =======================================================================================================
@@ -63,6 +66,10 @@ def isList(obj):
 # check if an object is a dictionary
 def isDict(obj):
     return isinstance(obj, dict)
+
+# convience method to print to stderr
+def eprint(obj):
+    print(obj, file=sys.stderr)
 
 # cleans a list or single package into a list of string package names
 def cleanPackageInput(pkgInput):
@@ -94,7 +101,7 @@ def installSpecialPackage(pkgConfig):
         pkgList = pkgConfig["pkg"]
     pkgList = cleanPackageInput(pkgList)
     if not pkgList:
-        print("ERROR: Invalid package config received (no valid package list found)")
+        eprint("ERROR: Invalid package config received (no valid package list found)")
         return
 
     # check that after is valid, if it exists
@@ -102,7 +109,7 @@ def installSpecialPackage(pkgConfig):
     if "after" in pkgConfig:
         after = pkgConfig["after"]
         if not callable(after) and not isString(after):
-            print("ERROR: Invalid package config received (value provided as after is not callable nor a string)")
+            eprint("ERROR: Invalid package config received (value provided as after is not callable nor a string)")
             return
 
     # check for copr definition and enable if found
@@ -111,7 +118,7 @@ def installSpecialPackage(pkgConfig):
 
         # ensure valid copr (is a string)
         if not isString(copr):
-            print("ERROR: Invalid package config received (provided copr host is not a string)")
+            eprint("ERROR: Invalid package config received (provided copr host is not a string)")
             return
 
         # run command to enable copr host
@@ -154,6 +161,36 @@ def setupHomeDirectory():
     else:
         subprocess.run(f"cp -ri {configFilesLocation}/. ~", shell=True)
 
+# runs the setup steps for downloading nerdfonts
+def setupNerdFonts():
+    fontDir = "~/.local/share/fonts"
+    subprocess.run(f"mkdir -p {fontDir}", shell=True)
+
+    for url in nerdFonts:
+        if not isString(url):
+            eprint("ERROR: Got invalid font data (nonString url)")
+            break;
+        
+        with tempfile.TemporaryDirectory() as tempDir:
+            subprocess.run(f"curl --output-dir {tempDir} -LO {url}", shell=True)
+
+            zipfiles = list(Path(tempDir).glob('*.zip'))
+
+            if zipfiles:
+                zip = zipfiles[0]
+                name = zip.stem
+                outputPath = os.path.join(fontDir, name)
+                subprocess.run(f"unzip {str(zip)} -d {outputPath}", shell=True)
+            else:
+                eprint(f"ERROR: Unable to zipfile download from {url}")
+                break;
+
+    subprocess.run("fc-cache -f -v", shell=True)
+            
+# sets up all fonts
+def setupFonts():
+    setupNerdFonts()
+
 # runs all setup steps
 def setupAll():
     setupPackages()
@@ -165,6 +202,7 @@ def main():
             "a - set up all\n"
             "d - set up home directory only\n"
             "p - set up packages only\n"
+            "f - set up fonts only\n"
             "q - quit\n"
     )
 
@@ -174,6 +212,7 @@ def main():
         "a": setupAll,
         "d": setupHomeDirectory,
         "p": setupPackages,
+        "f": setupFonts,
     }
 
     try:
