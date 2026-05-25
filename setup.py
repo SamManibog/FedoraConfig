@@ -195,6 +195,7 @@ def setupFonts():
 def setupAll():
     setupPackages()
     setupHomeDirectory()
+    setupFonts()
 
 def main():
     prompt = (
