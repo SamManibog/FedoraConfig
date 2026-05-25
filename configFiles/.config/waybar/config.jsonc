@@ -1,0 +1,104 @@
+{
+    "layer": "bottom",
+    "modules-left": [ "group/power", "battery", "cpu", "pulseaudio#out", "pulseaudio#in" ],
+    "modules-center": ["hyprland/workspaces"],
+    "modules-right":  [ "idle_inhibitor", "tray", "clock" ],
+
+    "group/power": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": "250",
+            "children-class": "powerIcon",
+            "transition-left-to-right": "true",
+        },
+        "modules": [
+            "custom/shutdown",
+            "custom/reboot",
+            "custom/sleep",
+            "custom/logout",
+            "custom/lock"
+        ]
+    },
+
+    "custom/shutdown": {
+        "format": "",
+        "tooltip": false,
+        "on-click": "shutdown now"
+    },
+    "custom/reboot": {
+        "format": "",
+        "tooltip": false,
+        "on-click": "reboot"
+    },
+    "custom/sleep": {
+        "format": "󰤄",
+        "tooltip": false,
+        "on-click": "systemctl suspend"
+    },
+
+    "battery": {
+        "format": "{capacity}% {icon}",
+        "format-icons": [ "", "", "", "", "" ],
+        "tooltip-format": "{time} remaining",
+        "interval": 10
+    },
+    "cpu": {
+        "format": "{usage}% ",
+        "interval": 10,
+        "on-click": "plasma-systemmonitor"
+    },
+    "pulseaudio#out": {
+        "on-click": "pwvucontrol",
+        "format": "{volume}% {icon}",
+        "format-bluetooth": "{volume}% {icon}",
+        "format-muted": "0% 󰝟",
+        "format-icons": {
+            "headphones": "",
+            "headphones-muted": "󰟎",
+            "phone": "",
+            "phone-muted": "",
+            "default": "",
+            "default-muted": "󰝟"
+        },
+        "scroll-step": 0
+    },
+    "pulseaudio#in": {
+        "on-click": "pwvucontrol",
+        "format": "{format_source}",
+        "format-source": "{volume}% 󰍬",
+        "format-source-muted": "0% 󰍭",
+        "tooltip": false,
+        "scroll-step": 0
+    },
+
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": "󱙱",
+            "deactivated": "󰌾"
+        },
+        "tooltip-format-activated": "Auto Lock Disabled",
+        "tooltip-format-deactivated": "Auto Lock Enabled"
+    },
+
+    "clock": {
+        "format": "{:%A %b %d, %Y - %I:%M:%S}",
+        "interval": 1,
+        "tooltip": false
+    },
+    "hyprland/workspaces": {
+        "format": "{id}",
+        "persistent-workspaces": {
+            "*": 9,
+        },
+        "ignore-workspaces": [ "10" ]
+    },
+
+    "tray": {
+        "icon-size": 12,
+        "spacing": 4,
+        "reverse-direction": true,
+        "show-passive-items": true
+    },
+}
+
