@@ -5,10 +5,10 @@ import subprocess
 
 # =======================================================================================================
 #       .d$$$$$b.  d$$$$$$$b  d$$$$$$$$$b  d$$$$$$$$$b  d$$$$$$$b  d$o   d$b   o$$$$$o.  .d$$$$$b.
-#       $$$   `$$  $$$""""""  `""'$$$'""`  `""'$$$'""`  `""$$$""`  $$$$  $$$  d$$*`*$$$  $$$   `$$
+#       $$$   `$$  $$$^^^^^"  "^^^$$$^^^"  "^^^$$$^^^"  "^^$$$^^"  $$$$  $$$  d$$*`*$$$  $$$   `$$
 #       `$$$bo.    $$$xxxx,       $$$          $$$         $$$     $$$^$ $$$  $$$        `$$$bo.  
 #          `^+$$b  $$$****`       $$$          $$$         $$$     $$$ $,$$$  $$$  ^$$b     `^+$$b
-#       $bo,,,d$$  $$$,,,,,,      $$$          $$$      ,,,$$$,,,  $$$  $$$$  &$$x,o$$$  $bo,,,d$$
+#       $bo,,,d$$  $$$xxxxo,      $$$          $$$      ,ox$$$xo,  $$$  $$$$  &$$x,o$$$  $bo,,,d$$
 #       `^$$$$$^`  ^$$$$$$$^      ^$^          ^$^      *$$$$$$$*  ^$^   ^$^  `$$$$* ^*  `^$$$$$^`
 #
 #   				                        EDIT THIS SECTION
@@ -37,13 +37,14 @@ pkgs = [
     },
 ]
 
-nerdFonts = [
+# the urls to fetch fonts from
+fonts = [
     "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/CommitMono.zip",
 ]
 
 # =======================================================================================================
-#                             o$$$$$o.   o$$$$$o.  d$$$$$$o.  d$$$$$$$b
-#                            d$$*`*$$$  d$$*`*$$$  $$$``*$$$  $$$""""""
+#                             o$$$$$o.   o$$$$$o   d$$$$$$o.  d$$$$$$$b
+#                            d$$*`*$$$  d$$*`*$$b  $$$``*$$$  $$$""""""
 #                            $$$        $$$   $$$  $$$   $$$  $$$xxxx, 
 #                            $$$   ,,,  $$$   $$$  $$$   $$$  $$$****` 
 #                            *$$bod$$I  Y$$bod$$Y  $$$ood$$Y  $$$,,,,,,
@@ -161,12 +162,32 @@ def setupHomeDirectory():
     else:
         subprocess.run(f"cp -ri {configFilesLocation}/. ~", shell=True)
 
-# runs the setup steps for downloading nerdfonts
-def setupNerdFonts():
+# installs a single font to the machine, given as a path
+def installFontByPath(path):
+    fontDir = "~/.local/share/fonts"
+
+    extension = "".join(path.suffixes)
+    name = path.stem
+    outputPath = os.path.join(fontDir, name)
+
+    def installZip(path):
+        subprocess.run(f"unzip {str(path)} -d {outputPath}", shell=True)
+
+    installRouter = {
+        ".zip": installZip
+    }
+
+    if extension in installRouter:
+        installRouter[extension](path)
+    else:
+        eprint(f"ERROR: Unable to handle font with extension '{extension}'")
+
+# runs the setup steps for downloading and installing fonts
+def installFonts():
     fontDir = "~/.local/share/fonts"
     subprocess.run(f"mkdir -p {fontDir}", shell=True)
 
-    for url in nerdFonts:
+    for url in fonts:
         if not isString(url):
             eprint("ERROR: Got invalid font data (nonString url)")
             break;
@@ -174,13 +195,11 @@ def setupNerdFonts():
         with tempfile.TemporaryDirectory() as tempDir:
             subprocess.run(f"curl --output-dir {tempDir} -LO {url}", shell=True)
 
-            zipfiles = list(Path(tempDir).glob('*.zip'))
+            files = list(Path(tempDir).glob('*'))
 
-            if zipfiles:
-                zip = zipfiles[0]
-                name = zip.stem
-                outputPath = os.path.join(fontDir, name)
-                subprocess.run(f"unzip {str(zip)} -d {outputPath}", shell=True)
+            if files:
+                fontFile = files[0]
+                installFontByPath(fontFile)
             else:
                 eprint(f"ERROR: Unable to zipfile download from {url}")
                 break;
@@ -189,7 +208,7 @@ def setupNerdFonts():
             
 # sets up all fonts
 def setupFonts():
-    setupNerdFonts()
+    installFonts()
 
 # runs all setup steps
 def setupAll():
