@@ -268,7 +268,8 @@ layout {
 // See the binds section below for more spawn examples.
 
 // This line starts waybar, a commonly used bar for Wayland compositors.
-spawn-at-startup "systemctl --user start waybar"
+spawn-sh-at-startup "systemctl --user start waybar"
+spawn-sh-at-startup "swaybg -c 995599"
 
 // Uncomment this line to ask the clients to omit their client-side decorations if possible.
 // If the client will specifically ask for CSD, the request will be honored.
@@ -331,7 +332,6 @@ window-rule {
     scroll-factor 1
 } 
 
-
 // Example: block out two password managers from screen capture.
 // (This example rule is commented out with a "/-" in front.)
 /-window-rule {
@@ -377,12 +377,14 @@ binds {
     Mod+Return hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
     Mod+A hotkey-overlay-title="Run an Application: wofi" { spawn-sh "pkill wofi; wofi --show drun -a --normal-window"; }
     Mod+I hotkey-overlay-title="Open a Browser: firefox" { spawn "firefox"; }
-    Mod+I hotkey-overlay-title="Restart Waybar" { spawn "systemctl --user restart waybar"; }
+    Mod+S hotkey-overlay-title="Restart Waybar" { spawn-sh "systemctl --user restart waybar"; }
 
     // System controls
     // Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }
     Mod+Alt+Q hotkey-overlay-title="Shutdown" { spawn-sh "shutdown now"; }
     Mod+Alt+R hotkey-overlay-title="Reboot" { spawn-sh "reboot"; }
+    Mod+Alt+E { quit; }
+
 
     // You can also use a shell. Do this if you need pipes, multiple commands, etc.
     // Note: the entire command goes as a single argument in the end.
@@ -400,7 +402,8 @@ binds {
     // or do a four-finger swipe up on a touchpad.
     Mod+O repeat=false { toggle-overview; }
 
-    Mod+Q { close-window; }
+    Mod+Shift+Q hotkey-overlay-title="Force Close Window" { spawn-sh "pkill -p $(niri msg --json focused-window | jq '.pid')"; }
+    Mod+Q hotkey-overlay-title="Close Window" { close-window; }
 
     Mod+Left  { focus-column-left; }
     Mod+Down  { focus-window-down; }
@@ -555,11 +558,9 @@ binds {
     Mod+R { switch-preset-column-width; }
     Mod+Shift+R { switch-preset-window-height; }
     Mod+Ctrl+R { reset-window-height; }
+
     Mod+F { maximize-column; }
     Mod+Shift+F { fullscreen-window; }
-
-    // Expand the focused column to space not taken up by other fully visible columns.
-    // Makes the column "fill the rest of the space".
     Mod+Ctrl+F { expand-column-to-available-width; }
 
     Mod+C { center-column; }
@@ -612,10 +613,6 @@ binds {
     // The allow-inhibiting=false property can be applied to other binds as well,
     // which ensures niri always processes them, even when an inhibitor is active.
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
-
-    // The quit action will show a confirmation dialog to avoid accidental exits.
-    Mod+Shift+E { quit; }
-    Ctrl+Alt+Delete { quit; }
 
     // Powers off the monitors. To turn them back on, do any input like
     // moving the mouse or pressing any other key.

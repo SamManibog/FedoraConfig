@@ -4,12 +4,12 @@ import tempfile
 import subprocess
 
 # =======================================================================================================
-#       .d$$$$$b.  d$$$$$$$b  d$$$$$$$$$b  d$$$$$$$$$b  d$$$$$$$b  d$o   d$b   o$$$$$o.  .d$$$$$b.
-#       $$$   `$$  $$$^^^^^"  "^^^$$$^^^"  "^^^$$$^^^"  "^^$$$^^"  $$$$  $$$  d$$*`*$$$  $$$   `$$
-#       `$$$bo.    $$$xxxx,       $$$          $$$         $$$     $$$^$ $$$  $$$        `$$$bo.  
-#          `^+$$b  $$$****`       $$$          $$$         $$$     $$$ $,$$$  $$$  ^$$b     `^+$$b
-#       $bo,,,d$$  $$$xxxxo,      $$$          $$$      ,ox$$$xo,  $$$  $$$$  &$$x,o$$$  $bo,,,d$$
-#       `^$$$$$^`  ^$$$$$$$^      ^$^          ^$^      *$$$$$$$*  ^$^   ^$^  `$$$$* ^*  `^$$$$$^`
+#       .d$$$$$b.  d$$$$$$$b  d$$$$$$$$$b  d$$$$$$$$$b  d$$$$$$$b  d$o    d$b   o$$$$$o.  .d$$$$$b.
+#       $$$   `$$  $$$^^^^^"  "^^^$$$^^^"  "^^^$$$^^^"  "^^$$$^^"  $$$$v  $$$  d$$*`*$$$  $$$   `$$
+#       `$$$bo.    $$$xxxx,       $$$          $$$         $$$     $$$^$v $$$  $$$        `$$$bo.  
+#          `^+$$b  $$$****`       $$$          $$$         $$$     $$$ ^$v$$$  $$$  ^$$b     `^+$$b
+#       $bo,,,d$$  $$$xxxxo,      $$$          $$$      ,ox$$$xo,  $$$  ^$$$$  &$$x,o$$$  $bo,,,d$$
+#       `^$$$$$^`  ^$$$$$$$^      ^$^          ^$^      *$$$$$$$*  ^$^    ^$^  `$$$$* ^*  `^$$$$$^`
 #
 #   				                        EDIT THIS SECTION
 # =======================================================================================================
@@ -28,8 +28,7 @@ pkgs = [
         "after": "git clone https://github.com/SamManibog/nvim ~/.config/nvim",
     },
     {
-        "pkg": [ "niri", "waybar", "wpctl", "wofi" ],
-        "after": "systemctl --user add-wants niri.service dms", 
+        "pkg": [ "niri", "waybar", "wpctl", "wofi", "swaybg", "jq" ],
     },
     {
         "pkg": "yazi",
@@ -38,7 +37,7 @@ pkgs = [
 ]
 
 # the urls to fetch fonts from
-fonts = [
+fontUrls = [
     "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/CommitMono.zip",
 ]
 
@@ -187,7 +186,7 @@ def installFonts():
     fontDir = "~/.local/share/fonts"
     subprocess.run(f"mkdir -p {fontDir}", shell=True)
 
-    for url in fonts:
+    for url in fontUrls:
         if not isString(url):
             eprint("ERROR: Got invalid font data (nonString url)")
             break;

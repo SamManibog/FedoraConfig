@@ -1,5 +1,6 @@
 {
-    "layer": "bottom",
+    "layer": "top",
+    "exclusive": true,
     "modules-left": [ "group/power", "battery", "cpu", "pulseaudio#out", "pulseaudio#in" ],
     "modules-center": ["hyprland/workspaces"],
     "modules-right":  [ "idle_inhibitor", "tray", "clock" ],
