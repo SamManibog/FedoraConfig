@@ -350,12 +350,7 @@ window-rule {
 
     open-floating true
 
-    default-column-width { fixed 720; }
-    default-window-height { fixed 540; }
-    default-floating-position x=600 y=270 relative-to="top-left"
-
-    min-height 720
-    max-height 540
+    default-floating-position x=0 y=0 relative-to="top-left"
 }
 
 binds {

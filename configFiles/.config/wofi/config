@@ -1,0 +1,15 @@
+# Allow images/icons to render next to applications in drun mode
+allow_images=true
+image_size=24
+
+# Prompt displayed at the top of the search bar
+prompt=Search apps...
+
+# Hide the scrollbar
+hide_scroll=true
+
+# Ignore case when searching
+insensitive=true
+
+# Show only the matches directly
+filter_rate=100
