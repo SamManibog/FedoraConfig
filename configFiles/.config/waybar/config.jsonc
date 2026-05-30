@@ -1,9 +1,21 @@
 {
     "layer": "top",
     "exclusive": true,
-    "modules-left": [ "group/power", "battery", "cpu", "pulseaudio#out", "pulseaudio#in" ],
-    "modules-center": ["hyprland/workspaces"],
+    "modules-left": [ "niri/workspaces", "battery", "cpu", "pulseaudio#out", "pulseaudio#in" ],
+    "modules-center": [ "niri/window" ],
     "modules-right":  [ "idle_inhibitor", "tray", "clock" ],
+
+    "niri/window": {
+        "icon": false,
+        "rewrite": {
+            "(.*) — Mozilla Firefox": "Firefox",
+        }
+    },
+
+    "niri/workspaces": {
+        "format": "{index}",
+        "hide-empty": true
+    },
 
     "group/power": {
         "orientation": "horizontal",
@@ -83,7 +95,7 @@
     },
 
     "clock": {
-        "format": "{:%A %b %d, %Y - %I:%M:%S}",
+        "format": "{:%I:%M:%S - %A %b %d, %Y}",
         "interval": 1,
         "tooltip": false
     },
