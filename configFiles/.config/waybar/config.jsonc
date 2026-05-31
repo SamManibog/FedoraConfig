@@ -9,6 +9,7 @@
         "icon": false,
         "rewrite": {
             "(.*) — Mozilla Firefox": "Firefox",
+            "Yazi: (.*)": "Yazi",
         }
     },
 
