@@ -307,6 +307,18 @@ animations {
     // slowdown 3.0
 }
 
+// make waybar semitransparent
+layer-rule {
+    match namespace="waybar"
+
+    opacity 0.7
+
+    background-effect {
+        blur true
+        noise 0.05
+    }
+}
+
 // Window rules let you adjust behavior for individual windows.
 // Find more information on the wiki:
 // https://github.com/YaLTeR/niri/wiki/Configuration:-Window-Rules
