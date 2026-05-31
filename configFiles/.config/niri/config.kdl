@@ -395,7 +395,7 @@ binds {
     // Note: the entire command goes as a single argument in the end.
     // Mod+T { spawn "bash" "-c" "notify-send hello && exec alacritty"; }
 
-    // Example volume keys mappings for PipeWire & WirePlumber.
+    // volume keys mappings for PipeWire & WirePlumber.
     // The allow-when-locked=true property makes them work even when the session is locked.
     XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02+ -l 1.0"; }
     XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02- -l 1.0"; }
@@ -405,6 +405,12 @@ binds {
     Alt+XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 0.02- -l 2.0"; }
     Alt+XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
     XF86AudioMicMute     allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
+
+    // brightness control keys
+    XF86MonBrightnessUp allow-when-locked=true { spawn-sh "brightnessctl s 1%+ -n 1%";}
+    XF86MonBrightnessDown allow-when-locked=true { spawn-sh "brightnessctl s 1%- -n 1%";}
+    Alt+XF86MonBrightnessUp allow-when-locked=true { spawn-sh "pkill gammastep || gammastep -O 4000"; }
+    Alt+XF86MonBrightnessDown allow-when-locked=true { spawn-sh "pkill gammastep || gammastep -O 4000"; }
 
     // Open/close the Overview: a zoomed-out view of workspaces and windows.
     // You can also move the mouse into the top-left hot corner,

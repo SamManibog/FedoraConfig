@@ -33,6 +33,8 @@ pkgs = [
             "niri",
             "waybar",
             "wpctl",
+            "brightnessctl",
+            "gammastep",
             "wofi",
             "swaybg",
             "jq",
