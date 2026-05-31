@@ -23,6 +23,7 @@ import subprocess
 pkgs = [
     "git-core",
     "kitty",
+    "blueman",
     {
         "pkg": "neovim",
         "after": "git clone https://github.com/SamManibog/nvim ~/.config/nvim",
@@ -36,6 +37,9 @@ pkgs = [
             "swaybg",
             "jq",
             "mako",
+            "xdg-desktop-portal-gtk",
+            "xdg-desktop-portal-gnome",
+            "gnome-keyring",
         ],
     },
     {
@@ -51,10 +55,10 @@ fontUrls = [
 
 # =======================================================================================================
 #                             o$$$$$o.   o$$$$$o   d$$$$$$o.  d$$$$$$$b
-#                            d$$*`*$$$  d$$*`*$$b  $$$``*$$$  $$$""""""
+#                            d$$*`*$$$  d$$*`*$$b  $$$``*$$$  $$$^^^^^"
 #                            $$$        $$$   $$$  $$$   $$$  $$$xxxx, 
 #                            $$$   ,,,  $$$   $$$  $$$   $$$  $$$****` 
-#                            *$$bod$$I  Y$$bod$$Y  $$$ood$$Y  $$$,,,,,,
+#                            *$$bod$$I  Y$$bod$$Y  $$$ood$$Y  $$$xxxxo,
 #                             *$$$$$*    *$$$$$*   ^$$$$$$*   ^$$$$$$$^
 #
 # 			                 	       PRESERVE THIS SECTION
