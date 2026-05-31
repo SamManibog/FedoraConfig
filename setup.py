@@ -28,7 +28,15 @@ pkgs = [
         "after": "git clone https://github.com/SamManibog/nvim ~/.config/nvim",
     },
     {
-        "pkg": [ "niri", "waybar", "wpctl", "wofi", "swaybg", "jq" ],
+        "pkg": [
+            "niri",
+            "waybar",
+            "wpctl",
+            "wofi",
+            "swaybg",
+            "jq",
+            "mako",
+        ],
     },
     {
         "pkg": "yazi",
