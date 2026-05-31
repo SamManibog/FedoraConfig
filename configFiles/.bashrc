@@ -36,3 +36,9 @@ function y() {
 	[ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
 	command rm -f -- "$tmp"
 }
+
+# make setup.py global
+function home-setup() {
+    cd ~/FedoraConfig/ && python setup.py
+}
+
