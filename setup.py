@@ -36,6 +36,7 @@ pkgs = [
             "brightnessctl",
             "gammastep",
             "wofi",
+            "swayidle",
             "swaylock",
             "swaybg",
             "jq",
