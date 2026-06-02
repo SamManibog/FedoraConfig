@@ -25,8 +25,16 @@ pkgs = [
     "kitty",
     "blueman",
     {
+        "pkg": "flatpak",
+        "after": "flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo",
+    },
+    {
         "pkg": "neovim",
         "after": "git clone https://github.com/SamManibog/nvim ~/.config/nvim",
+    },
+    {
+        "pkg": "SwayNotificationCenter",
+        "copr": "erikreider/SwayNotificationCenter",
     },
     {
         "pkg": [
@@ -40,7 +48,6 @@ pkgs = [
             "swaylock",
             "swaybg",
             "jq",
-            "mako",
             "xdg-desktop-portal-gtk",
             "xdg-desktop-portal-gnome",
             "gnome-keyring",

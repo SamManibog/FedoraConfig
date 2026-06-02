@@ -1,0 +1,306 @@
+:root {
+    --ac1: rgba(90, 150, 150, 1.0);
+    --ac2: rgba(150, 90, 90, 1.0);
+    --fg1: rgba(240, 240, 240, 1.0);
+    --fg2: rgba(150, 150, 150, 1.0);
+    --bg1: rgba(50, 50, 50, 1.0); 
+    --bg2: rgba(80, 80, 80, 1.0); 
+    --bg3: rgba(100, 100, 100, 1.0);
+
+    --border-radius1: 28px;
+    --border-radius2: 20px;
+    --border-radius3: 12px;
+
+    --h1-font-size: 32px;
+    --h2-font-size: 24px;
+    --h3-font-size: 18px;
+    --body-font-size: 16px;
+
+    --unhovered-offset: 16px;
+    --hovered-offset: 0px;
+
+    --safe-offset: 16px;
+
+    --switch-height: 24px;
+    --switch-width: 48px;
+
+    --trough-height: 8px;
+}
+
+* {
+    all: unset;
+
+    color: var(--fg1);
+    font-size: var(--body-font-size);
+}
+
+notificationwindow, blankwindow {
+    background: transparent;
+    padding: 8px 0px;
+}
+
+.control-center {
+    background: var(--bg1);
+    border-radius: var(--border-radius1) 0 0 var(--border-radius1);
+    box-shadow: 0px 0px 40px 15px rgba(0, 0, 0, 0.9);
+}
+
+/*** Notifications ***/
+.notification-row {
+    margin-bottom: 8px;
+    padding-left: var(--unhovered-offset);
+    transition: padding-left 0.2s ease-out 0s;
+}
+
+.notification-row:hover {
+    padding-left: var(--hovered-offset);
+}
+
+.notification-background:hover {
+    margin-left: var(--hovered-offset);
+}
+
+.notification-group-headers {
+	margin-left: var(--unhovered-offset);
+}
+
+.notification {
+    border-radius: var(--border-radius3);
+    background: var(--bg2);
+    border-left: 6px solid var(--bg2);
+    padding: 8px 16px 8px 10px;
+}
+
+.notification.critical {
+    border-left: 6px solid var(--ac2);
+}
+
+.notification-content .summary {
+    font-size: var(--h3-font-size);
+    font-weight: bold;
+    color: var(--fg1);
+}
+
+/* remove close buttons */
+.control-center .notification-background .close-button,
+.notification-group-close-button {
+	opacity: 0;
+}
+
+.notification-background:last-child {
+    margin-bottom: 0px;
+}
+
+.notification-group {
+    padding-left: var(--unhovered-offset);
+    transition: padding-left 0.2s ease-out 0s;
+    margin-bottom: 8px;
+}
+
+.notification-group:not(.collapsed) {
+    padding-left: 0px;
+}
+
+.notification-group.collapsed:hover {
+    padding-left: var(--hovered-offset);
+}
+
+.notification-group.collapsed .notification-row {
+    padding-left: 0px;
+}
+
+.notification-group-icon {
+    -gtk-icon-size: var(--h2-font-size);
+    -gtk-icon-palette: error var(--fg1), warning var(--fg1), success var(--fg1);
+}
+
+.notification-group-headers > label {
+    font-weight: bold;
+	font-size: var(--h2-font-size);
+}
+
+.notification-group-buttons .image-button {
+	border-radius: 100%;
+    padding: 4px;
+	background: var(--bg1);
+}
+
+.notification-group-buttons .image-button:hover {
+	background: var(--ac1);
+}
+
+/*** Widgets ***/
+.widget {
+    margin: 0px;
+    padding: 8px;
+    margin-left: 8px;
+    border-radius: 0px;
+    background: var(--bg1);
+}
+
+.widget:first-child {
+    margin-top: 16px;
+}
+
+.widget:last-child {
+    margin-bottom: 16px;
+}
+
+/* Title widget */
+.widget-title > label {
+    margin-right: 8px;
+    font-size: var(--h1-font-size);
+}
+
+.widget-title > button {
+    margin-left: 8px;
+    border-radius: var(--border-radius2);
+    padding: 8px;
+	background: var(--bg1);
+}
+
+.widget-title > button:hover {
+    background: var(--ac1);
+}
+
+/* Mpris widget */
+:root {
+    --mpris-album-art-overlay: rgba(0, 0, 0, 0.55);
+    --mpris-album-art-icon-size: 96px;
+    --mpris-album-art-shadow: 0px 0px 10px rgba(0, 0, 0, 0.75);
+}
+
+.widget-mpris {
+    padding: 0;
+    /* The parent to all players */
+}
+
+.widget-mpris .widget-mpris-player {
+    margin: 16px 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--mpris-album-art-shadow);
+}
+
+.widget-mpris .widget-mpris-player .mpris-background {
+    filter: blur(10px);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay {
+    padding: 16px;
+    background-color: var(--mpris-album-art-overlay);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay button:hover {
+    /* The media player buttons (play, pause, next, etc...) */
+    background: var(--bg3);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-album-art {
+    border-radius: var(--border-radius);
+    box-shadow: var(--mpris-album-art-shadow);
+    -gtk-icon-size: var(--mpris-album-art-icon-size);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-title {
+    font-weight: bold;
+    font-size: 1.25rem;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-subtitle {
+    font-size: 1.1rem;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay > box > button {
+    /* Change player control buttons */
+    padding: 8px;
+    margin: 0px 8px;
+    border-radius: 100%;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay > box > button:hover {
+    background-color: var(--bg3);
+}
+
+.widget-mpris > box > button {
+    /* Change player side buttons */
+}
+
+.widget-mpris > box > button:disabled {
+    /* Change player side buttons insensitive */
+}
+
+/* Volume widget */
+:root {
+    --widget-volume-row-icon-size: 24px;
+}
+
+/* Each row app icon */
+.widget-volume row image {
+    -gtk-icon-size: var(--widget-volume-row-icon-size);
+}
+
+.per-app-volume {
+    background-color: var(--bg2);
+    margin: 8px;
+    margin-bottom: 0;
+    border-radius: var(--border-radius);
+}
+
+/* Backlight widget */
+.widget-backlight {
+    padding-bottom: var(--safe-offset);
+}
+
+/* control widget labels */
+.widget-dnd label,
+.widget-volume label,
+.widget-backlight label {
+    margin-right: 16px;
+	font-size: var(--h3-font-size);
+    font-weight: bold;
+}
+
+/* slider widget styling */
+.widget-volume slider,
+.widget-backlight slider {
+    background: var(--fg1);
+    min-height: var(--switch-height);
+    min-width: var(--switch-height);
+    border-radius: 100%;
+}
+
+.widget-volume trough,
+.widget-backlight trough {
+    background: var(--ac2);
+    border-radius: var(--trough-height);
+}
+
+.widget-volume highlight,
+.widget-backlight highlight {
+    background: var(--ac1);
+}
+
+/* checkbox widget styling */
+.widget-dnd switch {
+    background-color: var(--ac2);
+    border-radius: var(--border-radius);
+    margin-left: 8px;
+    transition: background-color 0.05s linear 0s;
+    min-height: var(--switch-height);
+    min-width: var(--switch-width);
+}
+
+.widget-dnd switch:checked {
+    background-color: var(--ac1);
+}
+
+.widget-dnd switch slider {
+    background-color: var(--fg1);
+    border-radius: 100%;
+}
+
+/* padding widgets */
+.widget-label.pad {
+    font-size: 0px;
+    padding: 0px;
+}

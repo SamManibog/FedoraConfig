@@ -281,6 +281,7 @@ spawn-sh-at-startup "systemctl --user start waybar"
 spawn-sh-at-startup "systemctl --user start blueman-applet"
 spawn-sh-at-startup "swaybg -i .config/background.png"
 spawn-at-startup "swayidle"
+spawn-at-startup "swaync"
 
 // Uncomment this line to ask the clients to omit their client-side decorations if possible.
 // If the client will specifically ask for CSD, the request will be honored.
@@ -396,6 +397,7 @@ binds {
     Mod+A hotkey-overlay-title="Run an Application: wofi" { spawn-sh "pkill wofi; wofi --show drun -a --normal-window"; }
     Mod+I hotkey-overlay-title="Open a Browser: firefox" { spawn "firefox"; }
     Mod+S hotkey-overlay-title="Restart Waybar" { spawn-sh "systemctl --user restart waybar"; }
+    Mod+M hotkey-overlay-title="Open Control Panel" { spawn-sh "swaync-client -t -sw"; }
 
     // System controls
     // Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }
