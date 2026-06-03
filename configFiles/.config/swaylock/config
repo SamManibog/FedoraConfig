@@ -1,7 +1,7 @@
 show-failed-attempts
 
 image=~/.config/background.png
-scaling=fill
+scaling=stretch
 
 indicator-caps-lock
 indicator-idle-visible
