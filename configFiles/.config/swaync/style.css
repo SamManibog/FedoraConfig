@@ -48,7 +48,7 @@ notificationwindow, blankwindow {
 .control-center {
     background: var(--bg1);
     border-radius: var(--border-radius1) 0 0 var(--border-radius1);
-    box-shadow: 0px 0px 40px 15px rgba(0, 0, 0, 0.9);
+    box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.7);
 }
 
 /*** Notifications ***/

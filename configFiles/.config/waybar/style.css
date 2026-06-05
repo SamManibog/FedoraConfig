@@ -53,7 +53,7 @@ window#waybar.empty #window {
     border-top-right-radius: 100px;
     border-bottom-right-radius: 100px;
     padding-left: 8px;
-    padding-right: 16px;
+    padding-right: 12px;
 }
 
 #workspaces button.active {
