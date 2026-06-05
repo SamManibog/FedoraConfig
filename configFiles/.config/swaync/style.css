@@ -25,6 +25,10 @@
     --switch-width: 48px;
 
     --trough-height: 8px;
+
+    --elevated-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.5);
+    --std-transition-timing: 0.2s ease-out;
+    --hover-transition: background var(--std-transition-timing);
 }
 
 * {
@@ -49,7 +53,7 @@ notificationwindow, blankwindow {
 .notification-row {
     margin-bottom: 8px;
     padding-left: var(--unhovered-offset);
-    transition: padding-left 0.2s ease-out 0s;
+    transition: padding-left var(--std-transition-timing);
 }
 
 .notification-row:hover {
@@ -62,6 +66,11 @@ notificationwindow, blankwindow {
 
 .notification-group-headers {
 	margin-left: var(--unhovered-offset);
+    margin-bottom: 8px;
+    background: var(--bg2);
+    box-shadow: var(--elevated-shadow);
+    padding: 0px 12px;
+    border-radius: 1000px;
 }
 
 .notification {
@@ -69,6 +78,7 @@ notificationwindow, blankwindow {
     background: var(--bg2);
     border-left: 6px solid var(--bg2);
     padding: 8px 16px 8px 10px;
+    box-shadow: var(--elevated-shadow);
 }
 
 .notification.critical {
@@ -93,8 +103,10 @@ notificationwindow, blankwindow {
 
 .notification-group {
     padding-left: var(--unhovered-offset);
-    transition: padding-left 0.2s ease-out 0s;
+    transition: padding-left var(--std-transition-timing);
     margin-bottom: 8px;
+    margin-left: 16px;
+    margin-right: 8px;
 }
 
 .notification-group:not(.collapsed) {
@@ -122,7 +134,10 @@ notificationwindow, blankwindow {
 .notification-group-buttons .image-button {
 	border-radius: 100%;
     padding: 4px;
-	background: var(--bg1);
+	background: var(--bg2);
+    transition: var(--hover-transition);
+    box-shadow: var(--elevated-shadow);
+    margin-left: 8px;
 }
 
 .notification-group-buttons .image-button:hover {
@@ -146,17 +161,26 @@ notificationwindow, blankwindow {
     margin-bottom: 16px;
 }
 
+.widget-notifications {
+    padding-left: 0px;
+    padding-right: 0px;
+    margin-left: 0px;
+}
+
 /* Title widget */
 .widget-title > label {
     margin-right: 8px;
     font-size: var(--h1-font-size);
+    font-weight: bold;
 }
 
 .widget-title > button {
     margin-left: 8px;
     border-radius: var(--border-radius2);
     padding: 8px;
-	background: var(--bg1);
+	background: var(--bg2);
+    transition: var(--hover-transition);
+    box-shadow: var(--elevated-shadow);
 }
 
 .widget-title > button:hover {
@@ -167,7 +191,6 @@ notificationwindow, blankwindow {
 :root {
     --mpris-album-art-overlay: rgba(0, 0, 0, 0.55);
     --mpris-album-art-icon-size: 96px;
-    --mpris-album-art-shadow: 0px 0px 10px rgba(0, 0, 0, 0.75);
 }
 
 .widget-mpris {
@@ -178,7 +201,7 @@ notificationwindow, blankwindow {
 .widget-mpris .widget-mpris-player {
     margin: 16px 20px;
     border-radius: var(--border-radius);
-    box-shadow: var(--mpris-album-art-shadow);
+    box-shadow: var(--elevated-shadow);
 }
 
 .widget-mpris .widget-mpris-player .mpris-background {
@@ -197,17 +220,17 @@ notificationwindow, blankwindow {
 
 .widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-album-art {
     border-radius: var(--border-radius);
-    box-shadow: var(--mpris-album-art-shadow);
+    box-shadow: var(--elevated-shadow);
     -gtk-icon-size: var(--mpris-album-art-icon-size);
 }
 
 .widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-title {
     font-weight: bold;
-    font-size: 1.25rem;
+    font-size: var(--h2-font-size);
 }
 
 .widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-subtitle {
-    font-size: 1.1rem;
+    font-size: var(--h3-font-size);
 }
 
 .widget-mpris .widget-mpris-player .mpris-overlay > box > button {
@@ -215,10 +238,12 @@ notificationwindow, blankwindow {
     padding: 8px;
     margin: 0px 8px;
     border-radius: 100%;
+    transition: var(--hover-transition), box-shadow var(--std-transition-timing);
 }
 
 .widget-mpris .widget-mpris-player .mpris-overlay > box > button:hover {
-    background-color: var(--bg3);
+    box-shadow: var(--elevated-shadow);
+    background-color: var(--ac1);
 }
 
 .widget-mpris > box > button {
