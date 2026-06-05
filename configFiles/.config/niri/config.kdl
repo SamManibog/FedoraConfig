@@ -126,6 +126,8 @@ layout {
     // Set gaps around windows in logical pixels.
     gaps 24
 
+    background-color "transparent"
+
     // When to center a column when changing focus, options are:
     // - "never", default behavior, focusing an off-screen column will keep at the left
     //   or right edge of the screen.
@@ -282,6 +284,7 @@ animations {
 // make waybar semitransparent
 layer-rule {
     match namespace="waybar"
+    match namespace="wofi"
 
     shadow {
         on
@@ -291,9 +294,20 @@ layer-rule {
     }
 }
 
+// make backdrop appear in overview
+layer-rule {
+    match namespace="^wallpaper$"
+    place-within-backdrop true
+}
+
 // Window rules let you adjust behavior for individual windows.
 // Find more information on the wiki:
 // https://github.com/YaLTeR/niri/wiki/Configuration:-Window-Rules
+
+// fix focus ring appearing slightly off on certain windows
+window-rule {
+    clip-to-geometry true
+}
 
 // Work around WezTerm's initial configure bug
 // by setting an empty default-column-width.
@@ -338,15 +352,6 @@ window-rule {
     // block-out-from "screencast"
 }
 
-// Configure wofi
-window-rule {
-    match app-id="wofi"
-
-    open-floating true
-
-    default-floating-position x=0 y=0 relative-to="top-left"
-}
-
 binds {
     // Keys consist of modifiers separated by + signs, followed by an XKB key name
     // in the end. To find an XKB name for a particular key, you may use a program
@@ -364,7 +369,7 @@ binds {
 
     // Suggested binds for running programs: terminal, app launcher, screen locker.
     Mod+Return hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
-    Mod+A hotkey-overlay-title="Run an Application: wofi" { spawn-sh "pkill wofi || wofi --show drun -a --normal-window"; }
+    Mod+A hotkey-overlay-title="Run an Application: wofi" { spawn-sh "pkill wofi || wofi --show drun -a"; }
     Mod+I hotkey-overlay-title="Open a Browser: firefox" { spawn "firefox"; }
     Mod+S hotkey-overlay-title="Restart Waybar" { spawn-sh "systemctl --user restart waybar"; }
     Mod+M hotkey-overlay-title="Open Control Panel" { spawn-sh "swaync-client -t -sw"; }
@@ -402,8 +407,9 @@ binds {
     // or do a four-finger swipe up on a touchpad.
     Mod+O repeat=false { toggle-overview; }
 
-    Mod+Shift+Q hotkey-overlay-title="Force Close Window" { spawn-sh "pkill -p $(niri msg --json focused-window | jq '.pid')"; }
-    Mod+Q hotkey-overlay-title="Close Window" { close-window; }
+    // kill window (with extra script to kill wofi instead, if open)
+    Mod+Shift+Q hotkey-overlay-title="Force Close Window" { spawn-sh "pkill wofi || pkill -p $(niri msg --json focused-window | jq '.pid')"; }
+    Mod+Q hotkey-overlay-title="Close Window" { spawn-sh "pkill wofi || niri msg action close-window"; }
 
     Mod+Left  { focus-column-left; }
     Mod+Down  { focus-window-down; }
