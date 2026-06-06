@@ -51,6 +51,7 @@ pkgs = [
             "xdg-desktop-portal-gtk",
             "xdg-desktop-portal-gnome",
             "gnome-keyring",
+            "nm-applet",
         ],
     },
     {
