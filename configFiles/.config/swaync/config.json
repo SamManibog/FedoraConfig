@@ -14,8 +14,9 @@
     "control-center-margin-left": 0,
     "notification-2fa-action": true,
     "notification-inline-replies": false,
-    "notification-body-image-height": 400,
-    "notification-body-image-width": 400,
+    "notification-icon-size": 64,
+    "notification-body-image-height": 100,
+    "notification-body-image-width": 200,
     "timeout": 4,
     "timeout-low": 3,
     "timeout-critical": 0,
@@ -57,7 +58,8 @@
         "title#notifications-title",
         "notifications",
         "dnd",
-        "inhibitors"
+        "inhibitors",
+        "buttons-grid"
     ],
     "widget-config": {
         "notifications": {
@@ -96,14 +98,27 @@
             "loop-carousel": false
         },
         "buttons-grid": {
-            "buttons-per-row": 7,
+            "buttons-per-row": 5,
             "actions": [
                 {
-                    "label": "直",
-                    "type": "toggle",
-                    "active": true,
-                    "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && nmcli radio wifi on || nmcli radio wifi off'",
-                    "update-command": "sh -c '[[ $(nmcli radio wifi) == \"enabled\" ]] && echo true || echo false'"
+                    "label": "",
+                    "command": "swaylock -f"
+                },
+                {
+                    "label": "󰤄",
+                    "command": "swaylock -f ; niri msg action power-off-monitors ; systemctl suspend"
+                },
+                {
+                    "label": "󰍃",
+                    "command": "niri msg action quit --skip-confirmation"
+                },
+                {
+                    "label": "",
+                    "command": "reboot"
+                },
+                {
+                    "label": "󰐥",
+                    "command": "shutdown now"
                 }
             ]
         }

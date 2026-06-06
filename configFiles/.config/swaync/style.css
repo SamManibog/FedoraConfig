@@ -1,6 +1,7 @@
 :root {
     --ac1: rgba(90, 150, 150, 1.0);
     --ac2: rgba(150, 90, 90, 1.0);
+    --ac3: rgba(90, 150, 90, 1.0);
     --fg1: rgba(240, 240, 240, 1.0);
     --fg2: rgba(150, 150, 150, 1.0);
     --bg1: rgba(50, 50, 50, 1.0); 
@@ -15,6 +16,8 @@
     --h2-font-size: 24px;
     --h3-font-size: 18px;
     --body-font-size: 16px;
+
+    --symbol-font-size: 22px;
 
     --unhovered-offset: 16px;
     --hovered-offset: 0px;
@@ -52,6 +55,19 @@ notificationwindow, blankwindow {
 }
 
 /*** Notifications ***/
+.notification-content .body,
+.notification-content .summary {
+    margin-right: 0px;
+    transition: margin-right var(--std-transition-timing);
+}
+
+.notification-row:hover .notification-content .body,
+.notification-row:hover .notification-content .summary, 
+.notification-group.collapsed:hover .notification-content .body,
+.notification-group.collapsed:hover .notification-content .summary {
+    margin-right: var(--unhovered-offset);
+}
+
 .notification-row {
     margin-bottom: 8px;
     padding-left: var(--unhovered-offset);
@@ -83,7 +99,6 @@ notificationwindow, blankwindow {
     transition: var(--hover-transition);
 }
 
-/* Style the buttons when hovered */
 .notification-action:hover {
     background-color: var(--ac1);
 }
@@ -115,13 +130,17 @@ notificationwindow, blankwindow {
 }
 
 /* remove close buttons */
-.control-center .notification-background .close-button,
+.notification-background .close-button,
 .notification-group-close-button {
 	opacity: 0;
 }
 
 .notification-background:last-child {
     margin-bottom: 0px;
+}
+
+.notification-group:first-child {
+    margin-top: 8px;
 }
 
 .notification-group {
@@ -167,9 +186,14 @@ notificationwindow, blankwindow {
 	background: var(--ac1);
 }
 
+.floating-notifications > * > * > * {
+    padding-left: 32px;
+    padding-right: 8px;
+}
+
 /*** Widgets ***/
 .widget {
-    margin: 0px;
+    margin: 0px 8px 0px 0px;
     padding: 8px;
     margin-left: 8px;
     border-radius: 0px;
@@ -187,6 +211,7 @@ notificationwindow, blankwindow {
 .widget-notifications {
     padding-left: 0px;
     padding-right: 0px;
+    padding-top: 0px;
     margin-left: 0px;
 }
 
@@ -202,12 +227,26 @@ notificationwindow, blankwindow {
     border-radius: var(--border-radius2);
     padding: 8px;
 	background: var(--bg2);
-    transition: var(--hover-transition);
+    transition: var(--hover-transition),
+        box-shadow var(--std-transition-timing);
     box-shadow: var(--elevated-shadow);
+}
+
+.widget-title > button > label {
+    transition: color var(--std-transition-timing);
 }
 
 .widget-title > button:hover {
     background: var(--ac1);
+}
+
+.widget-title > button:disabled {
+    background: rgba(0, 0, 0, 0);
+    box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0);
+}
+
+.widget-title > button:disabled > label {
+    color: rgba(0, 0, 0, 0);
 }
 
 /* Mpris widget */
@@ -282,6 +321,31 @@ notificationwindow, blankwindow {
     --widget-volume-row-icon-size: 24px;
 }
 
+/* Buttons Grid */
+.widget-buttons-grid > flowbox > flowboxchild {
+    margin-right: 16px;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild:last-child {
+    margin-right: 0px;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button {
+    background: var(--bg2);
+    box-shadow: var(--elevated-shadow);
+    border-radius: 1000px;
+    transition: var(--hover-transition);
+    padding: 4px 0px;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:hover {
+    background: var(--ac1);
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button > label {
+    font-size: var(--symbol-font-size);
+}
+
 /* Each row app icon */
 .widget-volume row image {
     -gtk-icon-size: var(--widget-volume-row-icon-size);
@@ -345,10 +409,4 @@ notificationwindow, blankwindow {
 .widget-dnd switch slider {
     background-color: var(--fg1);
     border-radius: 100%;
-}
-
-/* padding widgets */
-.widget-label.pad {
-    font-size: 0px;
-    padding: 0px;
 }
