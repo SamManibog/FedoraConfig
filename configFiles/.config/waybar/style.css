@@ -3,6 +3,7 @@
 *-----------------------------------------------*/
 
 @define-color ac1 rgba(90, 150, 150, 1.0);
+@define-color ac2 rgba(150, 90, 90, 1.0);
 @define-color fg1 rgba(240, 240, 240, 1.0);
 @define-color bg1 rgba(50, 50, 50, 1.0); 
 @define-color bg2 rgba(80, 80, 80, 1.0); 
@@ -11,7 +12,7 @@
 * {
     min-height: 24px;
     min-width: 0px;
-    font-family: Roboto;
+    font-family: FontAwesome, Roboto;
     font-weight: normal;
     font-size: 15px;
 }
@@ -46,6 +47,7 @@ window#waybar.empty #window {
     color: @fg1;
     background-color: @bg3;
     border-radius: 0px;
+    border: none;
     padding: 0px 8px;
 }
 
@@ -58,6 +60,11 @@ window#waybar.empty #window {
 
 #workspaces button.active {
     background-color: @ac1;
+}
+
+#workspaces button:hover {
+    border: none;
+    background-color: @ac2;
 }
 
 .modules-left > * > * {
@@ -113,7 +120,6 @@ window#waybar.empty #window {
     border-top-left-radius: 100px;
     border-bottom-left-radius: 100px;
     background-color: @bg2;
-    padding-right: 8px;
     padding-left: 18px;
 }
 
@@ -126,3 +132,12 @@ window#waybar.empty #window {
     padding-left: 12px;
     padding-right: 6px;
 }
+
+#custom-notification {
+    padding: 0px 16px 0px 16px;
+    margin-left: 8px;
+    border-top-left-radius: 100px;
+    border-bottom-left-radius: 100px;
+    background-color: @bg3;
+}
+
