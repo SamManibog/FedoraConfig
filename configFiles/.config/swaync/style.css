@@ -34,7 +34,6 @@
 
     --std-transition-timing: 0.2s ease-out;
     --hover-transition: background var(--std-transition-timing);
-
 }
 
 * {
@@ -258,12 +257,13 @@ notificationwindow, blankwindow {
 }
 
 .widget-mpris {
-    padding: 0;
-    /* The parent to all players */
+    margin-left: 0px;
+    margin-right: 0px;
+    padding: 8px 16px;
 }
 
 .widget-mpris .widget-mpris-player {
-    margin: 16px 20px;
+    margin: 8px;
     border-radius: var(--border-radius2);
     box-shadow: var(--elevated-shadow);
 }
@@ -311,7 +311,7 @@ notificationwindow, blankwindow {
 }
 
 .widget-mpris > box > button {
-    /* Change player side buttons */
+    padding: 0px 16px
 }
 
 .widget-mpris > box > button:disabled {
