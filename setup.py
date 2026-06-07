@@ -32,7 +32,7 @@ pkgs = [
     },
     {
         "pkg": "neovim",
-        "after": "git clone https://github.com/SamManibog/nvim ~/.config/nvim",
+        "after": "git clone git@github.com:SamManibog/nvim.git ~/.config/nvim",
     },
     {
         "pkg": "SwayNotificationCenter",

@@ -4,7 +4,7 @@
 
 Ensure git is installed then run the following command:
 ```bash
-git clone https://github.com/SamManibog/FedoraConfig ~/FedoraConfig
+git clone git@github.com:SamManibog/FedoraConfig.git ~/FedoraConfig
 cd ~/FedoraConfig
 python setup.py
 ```
