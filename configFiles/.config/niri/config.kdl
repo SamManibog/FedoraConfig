@@ -285,7 +285,7 @@ animations {
 // make waybar semitransparent
 layer-rule {
     match namespace="waybar"
-    match namespace="wofi"
+    match namespace="launcher"
 
     shadow {
         on
@@ -370,7 +370,7 @@ binds {
 
     // Suggested binds for running programs: terminal, app launcher, screen locker.
     Mod+Return hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
-    Mod+A hotkey-overlay-title="Run an Application: wofi" { spawn-sh "pkill wofi || wofi --show drun -a"; }
+    Mod+A hotkey-overlay-title="Run an Application" { spawn-sh "pkill fuzzel || fuzzel"; }
     Mod+I hotkey-overlay-title="Open a Browser: firefox" { spawn "firefox"; }
     Mod+S hotkey-overlay-title="Restart Waybar" { spawn-sh "systemctl --user restart waybar"; }
     Mod+M hotkey-overlay-title="Open Control Panel" { spawn-sh "swaync-client -t -sw"; }
@@ -405,9 +405,9 @@ binds {
     // or do a four-finger swipe up on a touchpad.
     Mod+O repeat=false { toggle-overview; }
 
-    // kill window (with extra script to kill wofi instead, if open)
-    Mod+Shift+Q hotkey-overlay-title="Force Close Window" { spawn-sh "pkill wofi || pkill -p $(niri msg --json focused-window | jq '.pid')"; }
-    Mod+Q hotkey-overlay-title="Close Window" { spawn-sh "pkill wofi || niri msg action close-window"; }
+    // kill window (with extra script to kill fuzzel instead, if open)
+    Mod+Shift+Q hotkey-overlay-title="Force Close Window" { spawn-sh "pkill fuzzel || pkill -p $(niri msg --json focused-window | jq '.pid')"; }
+    Mod+Q hotkey-overlay-title="Close Window" { spawn-sh "pkill fuzzel || niri msg action close-window"; }
 
     Mod+Left  { focus-column-left; }
     Mod+Down  { focus-window-down; }

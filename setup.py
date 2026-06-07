@@ -24,6 +24,7 @@ pkgs = [
     "git-core",
     "kitty",
     "blueman",
+    "google-roboto-fonts"
     {
         "pkg": "flatpak",
         "after": "flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo",
@@ -43,7 +44,7 @@ pkgs = [
             "wpctl",
             "brightnessctl",
             "gammastep",
-            "wofi",
+            "fuzzel",
             "swayidle",
             "swaylock",
             "swaybg",

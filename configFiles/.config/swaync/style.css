@@ -34,6 +34,7 @@
 
     --std-transition-timing: 0.2s ease-out;
     --hover-transition: background var(--std-transition-timing);
+
 }
 
 * {
@@ -41,6 +42,7 @@
 
     color: var(--fg1);
     font-size: var(--body-font-size);
+    font-family: Roboto;
 }
 
 notificationwindow, blankwindow {
