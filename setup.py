@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 import tempfile
 import subprocess
@@ -71,7 +72,7 @@ pkgs = [
 
 # the urls to fetch fonts from
 fontUrls = [
-    "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/CommitMono.zip",
+    "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/CommitMono.zip",
 ]
 
 # =======================================================================================================

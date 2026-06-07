@@ -1,7 +1,7 @@
 {
     "layer": "top",
     "exclusive": true,
-    "modules-left": [ "niri/workspaces", "battery", "cpu", "pulseaudio#out", "pulseaudio#in" ],
+    "modules-left": [ "niri/workspaces", "battery", "cpu", "memory", "pulseaudio#out", "pulseaudio#in" ],
     "modules-center": [ "niri/window" ],
     "modules-right":  [ "tray", "clock", "custom/notification" ],
 
@@ -80,8 +80,14 @@
     "cpu": {
         "format": "{usage}% ",
         "interval": 10,
-        "on-click": "plasma-systemmonitor"
+        "on-click": "gnome-system-monitor -p"
     },
+    "memory": {
+        "interval": 10,
+        "format": "{percentage}% ",
+        "on-click": "gnome-system-monitor -r"
+    },
+
     "pulseaudio#out": {
         "on-click": "pavucontrol",
         "format": "{volume}% {icon}",
