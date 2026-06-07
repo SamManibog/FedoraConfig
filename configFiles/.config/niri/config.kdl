@@ -128,6 +128,8 @@ layout {
 
     background-color "transparent"
 
+    empty-workspace-above-first
+
     // When to center a column when changing focus, options are:
     // - "never", default behavior, focusing an off-screen column will keep at the left
     //   or right edge of the screen.
@@ -307,6 +309,7 @@ layer-rule {
 
 // fix focus ring appearing slightly off on certain windows
 window-rule {
+    geometry-corner-radius 16
     clip-to-geometry true
 }
 
