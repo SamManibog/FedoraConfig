@@ -61,7 +61,7 @@ input {
 
     // Focus windows and outputs automatically when moving the mouse into them.
     // Setting max-scroll-amount="0%" makes it work only on windows already fully on screen.
-    focus-follows-mouse max-scroll-amount="50%"
+    focus-follows-mouse max-scroll-amount="0%"
 }
 
 hotkey-overlay {
@@ -124,7 +124,7 @@ gestures {
 // https://github.com/YaLTeR/niri/wiki/Configuration:-Layout
 layout {
     // Set gaps around windows in logical pixels.
-    gaps 24
+    gaps 16
 
     background-color "transparent"
 
@@ -235,8 +235,8 @@ layout {
     // Top and bottom struts will simply add outer gaps in addition to the area occupied by
     // layer-shell panels and regular gaps.
     struts {
-        // left 64
-        // right 64
+        left 24
+        right 24
         // top 64
         // bottom 64
     }
@@ -332,7 +332,7 @@ window-rule {
 // Open Firefox maximized
 window-rule {
     match title="Firefox"
-    default-column-width { proportion 0.98; }
+    open-maximized true
 }
 
 // Make kitty touchpad scrolling faster
@@ -560,7 +560,7 @@ binds {
     Mod+Shift+R { switch-preset-window-height; }
     Mod+Ctrl+R { reset-window-height; }
 
-    Mod+F { spawn-sh "niri msg action set-column-width 98% ; sleep 0.2s ; niri msg action center-column"; }
+    Mod+F { maximize-column; }
 
     Mod+Shift+F { fullscreen-window; }
     Mod+Ctrl+F { expand-column-to-available-width; }
