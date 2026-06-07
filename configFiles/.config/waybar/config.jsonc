@@ -83,7 +83,7 @@
         "on-click": "plasma-systemmonitor"
     },
     "pulseaudio#out": {
-        "on-click": "pwvucontrol",
+        "on-click": "pavucontrol",
         "format": "{volume}% {icon}",
         "format-bluetooth": "{volume}% {icon}",
         "format-muted": "0% 󰝟",
@@ -98,7 +98,7 @@
         "scroll-step": 0
     },
     "pulseaudio#in": {
-        "on-click": "pwvucontrol",
+        "on-click": "pavucontrol",
         "format": "{format_source}",
         "format-source": "{volume}% 󰍬",
         "format-source-muted": "0% 󰍭",

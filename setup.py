@@ -24,7 +24,8 @@ pkgs = [
     "git-core",
     "kitty",
     "blueman",
-    "google-roboto-fonts"
+    "google-roboto-fonts",
+    "pavucontrol",
     {
         "pkg": "flatpak",
         "after": "flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo",
