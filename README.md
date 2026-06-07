@@ -2,6 +2,8 @@
 
 ## Installation
 
+It is recommended to install these dotfiles with Fedora Workstation as the base desktop environment.
+
 Ensure git is installed then run the following command:
 ```bash
 git clone git@github.com:SamManibog/FedoraConfig.git ~/FedoraConfig
