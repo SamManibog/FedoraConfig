@@ -397,8 +397,8 @@ binds {
     // brightness control keys
     XF86MonBrightnessUp allow-when-locked=true { spawn-sh "brightnessctl s 1%+ -n 1%";}
     XF86MonBrightnessDown allow-when-locked=true { spawn-sh "brightnessctl s 1%- -n 1%";}
-    Alt+XF86MonBrightnessUp allow-when-locked=true { spawn-sh "pkill gammastep || gammastep -O 4000"; }
-    Alt+XF86MonBrightnessDown allow-when-locked=true { spawn-sh "pkill gammastep || gammastep -O 4000"; }
+    Alt+XF86MonBrightnessUp allow-when-locked=true { spawn-sh "cat ~/.config/niri/toggle-nightmode-weak.sh | sh"; }
+    Alt+XF86MonBrightnessDown allow-when-locked=true { spawn-sh "cat ~/.config/niri/toggle-nightmode-strong.sh | sh"; }
 
     // Open/close the Overview: a zoomed-out view of workspaces and windows.
     // You can also move the mouse into the top-left hot corner,
