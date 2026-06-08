@@ -96,7 +96,7 @@ def askYesNo(prompt):
 
 # improve the linux cp function by skipping copy if contents match
 # if the copy replaces a file with different contents, prints a diff
-def cpImproved(src, dst, recursive=True):
+def cpImproved(src, dst, recursive=True, allowOverwrite=True):
     srcPath = Path(src).expanduser()
     dstPath = Path(dst).expanduser()
 
@@ -107,26 +107,31 @@ def cpImproved(src, dst, recursive=True):
             # check if files are different
             if filecmp.cmp(srcPath, dstPath, shallow=False):
                 print(f"skipped '{str(dstPath)}' (exact copy)")
-            else:
-                # get a diff between the files
-                with open(srcPath, 'r', encoding='utf-8') as srcFile, open(dstPath, 'r', encoding='utf-8') as dstFile:
-                    srcLines = srcFile.readlines()
-                    dstLines = dstFile.readlines()
-                    
-                    print(f"attempting to overwrite '{str(dstPath)}'")
-                    print("difference:")
-                    printColoredDiff(
-                        srcLines, 
-                        dstLines, 
-                        fromfile=str(srcPath), 
-                        tofile=str(dstPath)
-                    )
+                return
 
-                # prompt user to confirm copy
-                print()
-                if askYesNo(f"overwrite '{str(dstPath)}'?"):
-                    subprocess.run(f"cp {str(srcPath)} {str(dstPath)}", shell=True)
-                    print(f"wrote '{str(dstPath)}'")
+            if not allowOverwrite:
+                print(f"skipped '{str(dstPath)}' (overwrite disabled)")
+                return
+
+            # get a diff between the files
+            with open(srcPath, 'r', encoding='utf-8') as srcFile, open(dstPath, 'r', encoding='utf-8') as dstFile:
+                srcLines = srcFile.readlines()
+                dstLines = dstFile.readlines()
+                    
+                print(f"attempting to overwrite '{str(dstPath)}'")
+                print("difference:")
+                printColoredDiff(
+                    srcLines, 
+                    dstLines, 
+                    fromfile=str(srcPath), 
+                    tofile=str(dstPath)
+                )
+
+            # prompt user to confirm copy
+            print()
+            if askYesNo(f"overwrite '{str(dstPath)}'?"):
+                subprocess.run(f"cp {str(srcPath)} {str(dstPath)}", shell=True)
+                print(f"wrote '{str(dstPath)}'")
 
         else:
             # automatic copy because dst does not exist
@@ -145,7 +150,7 @@ def cpImproved(src, dst, recursive=True):
 
         with os.scandir(srcPath) as entryIter:
             for entry in entryIter:
-                cpImproved(srcPath / entry.name, dstPath / entry.name)
+                cpImproved(srcPath / entry.name, dstPath / entry.name, allowOverwrite=allowOverwrite)
     else:
         eprint(f"Copy source path '{str(srcPath)}' not found.")
 
@@ -197,6 +202,7 @@ def installSpecialPackage(pkgConfig):
 
 # runs the setup steps for downloading packages
 def setupPackages():
+    print("Installing packages...")
     # the list of "normal" packages
     basePkgs = list(filter(isString, configOptions.pkgs))
 
@@ -212,14 +218,18 @@ def setupPackages():
     # install special packages
     for pkgConfig in specialPkgs:
         installSpecialPackage(pkgConfig)
+    print("Package installation complete.")
 
 # runs the setup steps for updating the home directory
 def setupHomeDirectory():
     # copy this directory structure recursively and interactively into home, as long as this script isn't running from home directory
     if os.getcwd() == os.path.expanduser("~"):
-        print("Running Quick Setup from home directory, copying step skipped.")
+        print("File setup skipped (running from home directory)")
     else:
+        print("Setting up files...")
         cpImproved(configOptions.staticUserFilesPath, "~")
+        cpImproved(configOptions.templateUserFilesPath, "~", allowOverwrite=False)
+        print("File setup complete")
 
 # installs a single font to the machine, given as a path
 def installFontByPath(path):
@@ -267,7 +277,9 @@ def installFonts():
             
 # sets up all fonts
 def setupFonts():
+    print("Setting up fonts...")
     installFonts()
+    print("Font setup complete")
 
 # runs all setup steps
 def setupAll():

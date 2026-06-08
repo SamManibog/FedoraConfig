@@ -6,7 +6,7 @@
 #       $bo,,,d$$  $$$xxxxo,      $$$          $$$      ,ox$$$xo,  $$$  ^$$$$  &$$x,o$$$  $bo,,,d$$
 #       `^$$$$$^`  ^$$$$$$$^      ^$^          ^$^      *$$$$$$$*  ^$^    ^$^  `$$$$* ^*  `^$$$$$^`
 #
-#   				                        EDIT THIS SECTION
+#   				                        EDIT THIS FILE
 # =======================================================================================================
 
 # the list of packages to be installed
@@ -70,5 +70,9 @@ fontUrls = [
 ]
 
 # the relative location to look for config files to copy into the home directory
-staticUserFilesPath = "./configFiles"
+# these files will ask permission before overwriting
+staticUserFilesPath = "./staticUserFiles"
 
+# the relative location to look for config files to copy into the home directory
+# these files will be skipped if already present in the home directory
+templateUserFilesPath = "./templateUserFiles"
