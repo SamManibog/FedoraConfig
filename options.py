@@ -21,6 +21,7 @@ pkgs = [
     "blueman",
     "bottles",
     "google-roboto-fonts",
+    "mediawriter",
     "pavucontrol",
     "thunderbird",
     "steam",
