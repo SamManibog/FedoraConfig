@@ -15,6 +15,22 @@ Note: Make sure to run these exact commands. Some functionality requires that th
 
 ## File Structure
 
-setup.py is the installation script for this configuration.
+ - setup.py - the installation script for this configuration.
+ - options.py - user-specifiable options for this configuration.
+ - staticUserFiles - a directory containing files to be copied exactly to the home directory
+ - templateUserFiles - like static user files, but will never overwrite existing files
+ - afterUserFiles - a directory containing .py for running functions after files are written or overwritten
 
-setup.py will copy files from ./configFiles into the home directory.
+## Using afterUserFiles
+
+Each file in afterUserFiles should be a .py files that corresponds to a file or directory in
+staticUserFiles or templateUserFiles. Its name should be an exact match of the corresponding
+file or directory, but with .py appended. Each of these files will be imported as a python
+module and then called using the '()' operator. This call will pass a single parameter that
+matches the path of the newly written file or directory.
+
+This directory is useful for applying file permissions, dynamic configurations, or
+downloading web content.
+
+
+

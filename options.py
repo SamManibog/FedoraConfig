@@ -17,7 +17,6 @@
 #   2) contain a key "after" which may be a bash command provided as a string or a callable
 pkgs = [
     "git-core",
-    "kitty",
     "blueman",
     "bottles",
     "google-roboto-fonts",
@@ -26,6 +25,10 @@ pkgs = [
     "thunderbird",
     "gnome-font-viewer",
     "steam",
+    {
+        "kitty",
+        "after": "gsettings set org.gnome.desktop.default-applications.terminal exec kitty",
+    }
     {
         "pkg": "ffmpeg-free",
         "after": "sudo dnf swap ffmpeg-free ffmpeg --allowerasing",
