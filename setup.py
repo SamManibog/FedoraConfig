@@ -281,6 +281,14 @@ def setupFonts():
     installFonts()
     print("Font setup complete")
 
+# runs the after function in options.after()
+def setupAfter():
+    print("Running options.after()...")
+    afterFunc = getattr(configOptions, "after", None)
+    if callable(afterFunc):
+        afterFunc()
+    print("options.after() complete")
+
 # runs all setup steps
 def setupAll():
     setupPackages()
@@ -294,6 +302,7 @@ def main():
             "d - set up home directory only\n"
             "p - set up packages only\n"
             "f - set up fonts only\n"
+            "z - run options.after() only\n"
             "q - quit\n"
     )
 
@@ -304,6 +313,7 @@ def main():
         "d": setupHomeDirectory,
         "p": setupPackages,
         "f": setupFonts,
+        "z": setupAfter,
     }
 
     try:

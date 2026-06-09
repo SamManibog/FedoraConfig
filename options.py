@@ -76,3 +76,11 @@ staticUserFilesPath = "./staticUserFiles"
 # the relative location to look for config files to copy into the home directory
 # these files will be skipped if already present in the home directory
 templateUserFilesPath = "./templateUserFiles"
+
+# the function to run after all config functions are run
+import subprocess
+def after():
+    # set dark theme
+    darkThemeCmd = "gsettings set org.gnome.desktop.interface color-scheme prefer-dark"
+    print(darkThemeCmd)
+    subprocess.run(darkThemeCmd, shell=True)
