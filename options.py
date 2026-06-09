@@ -26,9 +26,9 @@ pkgs = [
     "gnome-font-viewer",
     "steam",
     {
-        "kitty",
+        "pkg": "kitty",
         "after": "gsettings set org.gnome.desktop.default-applications.terminal exec kitty",
-    }
+    },
     {
         "pkg": "ffmpeg-free",
         "after": "sudo dnf swap ffmpeg-free ffmpeg --allowerasing",
