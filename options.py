@@ -19,9 +19,24 @@ pkgs = [
     "git-core",
     "kitty",
     "blueman",
+    "bottles",
     "google-roboto-fonts",
     "pavucontrol",
     "thunderbird",
+    "steam",
+    {
+        "pkg": "ffmpeg-free",
+        "after": "sudo dnf swap ffmpeg-free ffmpeg --allowerasing",
+    },
+    {
+        "pkg": [
+            "audacity",
+            "blender",
+            "gimp",
+            "inkscape",
+            "openshot",
+        ],
+    },
     {
         "pkg": [
             "libreoffice-writer",
@@ -38,10 +53,6 @@ pkgs = [
             "ifuse",
             "usbmuxd",
         ],
-    },
-    {
-        "pkg": "flatpak",
-        "after": "flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo",
     },
     {
         "pkg": "neovim",
@@ -73,6 +84,25 @@ pkgs = [
         "pkg": "yazi",
         "copr": "varlad/yazi",
     },
+]
+
+# the list of flatpak remotes to add
+# note that flathub is enabled by default
+# stored as dictionaries with two keys:
+#   "name": the name of the remote
+#   "url": the url of the remote
+flatpakRemotes = [
+]
+
+# the flatpaks to install
+# can be provided as a string or a dictionary
+# if a dictionary, it must contain a key "flatpak" or "flatpaks" that is either a string or list of string packages
+# if a dictionary, it may
+#   1) contain a key "remote" to define the remote that holds the package (default is "flathub")
+#   2) contain a key "after" which may be a bash command provided as a string or a callable
+flatpaks = [
+    "com.spotify.Client",
+    "org.onlyoffice.desktopeditors",
 ]
 
 # the urls to fetch fonts from

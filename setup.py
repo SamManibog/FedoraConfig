@@ -14,9 +14,25 @@ import os
 from pathlib import Path
 import tempfile
 import subprocess
+import re
 
 import options
 import utils
+
+# checks if a copr is enabled by name
+def coprIsEnabled(copr):
+    coprListCmd = "dnf copr list"
+    coprList = subprocess.run(coprListCmd, capture_output=True, text=True, shell=True).stdout
+
+    coprRegexUncompiled = f"{copr}.*"
+    coprRegex = re.compile(coprRegexUncompiled)
+    match = re.search(coprRegex, coprList)
+
+    if match:
+        disabledRegex = r"\(disabled\)"
+        return not re.search(disabledRegex, match.group(0))
+    else:
+        return False
 
 # cleans a list or single package into a list of string package names
 def cleanPackageInput(pkgInput):
@@ -27,17 +43,22 @@ def cleanPackageInput(pkgInput):
     else:
         return []
 
-# install a list of packages, passed as a list of strings
-def installPackages(pkgList):
+# install a list of packages passed as a list of strings using the given command
+def installPackagesOrPaks(cmd, pkgList):
     # the list of well-formed packages
     goodPkgs = cleanPackageInput(pkgList)
 
-    # the command used to install basePkgs
-    goodPkgsCmd = f"sudo dnf install {" ".join(goodPkgs)}"
+    if goodPkgs:
+        # the command used to install basePkgs
+        goodPkgsCmd = f"{cmd} {" ".join(goodPkgs)}"
 
-    # install base packages
-    print(goodPkgsCmd)
-    subprocess.run(goodPkgsCmd, shell=True)
+        # install base packages
+        print(goodPkgsCmd)
+        subprocess.run(goodPkgsCmd, shell=True)
+
+# install a list of packages, passed as a list of strings
+def installPackages(pkgList):
+    installPackagesOrPaks("sudo dnf install", pkgList)
 
 # install a special package
 def installSpecialPackage(pkgConfig):
@@ -69,10 +90,11 @@ def installSpecialPackage(pkgConfig):
             utils.eprint("ERROR: Invalid package config received (provided copr host is not a string)")
             return
 
-        # run command to enable copr host
-        coprCmd = f"sudo dnf copr enable {copr}"
-        print(coprCmd)
-        subprocess.run(coprCmd, shell=True)
+        # run command to enable copr host if not already enabled
+        if not coprIsEnabled(copr):
+            coprCmd = f"sudo dnf copr enable {copr}"
+            print(coprCmd)
+            subprocess.run(coprCmd, shell=True)
 
     # install packages
     installPackages(pkgList)
@@ -83,6 +105,73 @@ def installSpecialPackage(pkgConfig):
             after()
         else:
             subprocess.run(after, shell=True)
+
+# install a list of flatpaks, passed as a list of strings
+def installFlatpaks(pakList, remote="flathub"):
+    installPackagesOrPaks(f"flatpak install {remote}", pakList)
+
+# install a special package
+def installSpecialFlatpaks(pakConfig):
+    # ensure that we have a valid package list
+    pakList = []
+    if "flatpaks" in pakConfig:
+        pakList = pakConfig["flatpaks"]
+    elif "flatpak" in pakConfig:
+        pakList = pakConfig["flatpak"]
+    pakList = cleanPackageInput(pakList)
+    if not pakList:
+        utils.eprint("ERROR: Invalid flatpak config received (no valid flatpak list found)")
+        return
+
+    # check that after is valid, if it exists
+    after = None
+    if "after" in pakConfig:
+        after = pakConfig["after"]
+        if not callable(after) and not utils.isString(after):
+            utils.eprint("ERROR: Invalid flatpak config received (value provided as after is not callable nor a string)")
+            return
+
+    # check for remote definition
+    remote = "flathub"
+    if "remote" in pakConfig:
+        remote = pakConfig["remote"]
+
+        # ensure valid copr (is a string)
+        if not utils.isString(remote):
+            utils.eprint("ERROR: Invalid flatpak config received (provided flatpak remote is not a string)")
+            return
+
+    # install packages
+    installFlatpaks(pakList, remote=remote)
+
+    # run after command
+    if after:
+        if callable(after):
+            after()
+        else:
+            subprocess.run(after, shell=True)
+
+def enableFlatpakRemotes(remotes):
+    for remote in remotes:
+        if not "name" in remote:
+            utils.eprint("ERROR: Invalid flatpak remote received (provided remote has no name)")
+
+        if not "url" in remote:
+            utils.eprint("ERROR: Invalid flatpak remote received (provided remote has no url)")
+
+        cmd = f"flatpak remote-add --if-not-exists {remote["name"]} {remote["url"]}"
+        print(cmd)
+        subprocess.run(cmd, shell=True)
+
+# sets up rpm fusion
+def setupRpmFusion():
+    rpmPkgs = [
+        "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm",
+        "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm",
+    ]
+    print("Setting up RPM Fusion...")
+    installPackages(rpmPkgs)
+    print("RPM Fusion Installed...")
 
 # runs the setup steps for downloading packages
 def setupPackages():
@@ -103,6 +192,40 @@ def setupPackages():
     for pkgConfig in specialPkgs:
         installSpecialPackage(pkgConfig)
     print("Package installation complete.")
+
+# runs the steps for installing flatpaks
+def setupFlatpaks():
+    # ensure flatpak is installed
+    print("Installing flatpak...")
+    installPackages("flatpak")
+    print("Flatpak Installed...")
+
+    print("Enabling Flatpak remotes...")
+    # ensure flathub is installed
+    enableFlatpakRemotes([
+        {
+            "name": "flathub",
+            "url": "https://flathub.org/repo/flathub.flatpakrepo",
+        }
+    ])
+    enableFlatpakRemotes(options.flatpakRemotes)
+    print("Flatpak remotes enabled")
+
+    print("Installing flatpaks...")
+
+    # the list of "normal" flatpaks
+    basePaks = list(filter(utils.isString, options.flatpaks))
+
+    # install "normal" flatpaks
+    installFlatpaks(basePaks)
+
+    # the list of "special" flatpaks with extra instructions
+    specialPaks = list(filter(utils.isDict, options.flatpaks))
+
+    # install special packages
+    for pakConfig in specialPaks:
+        installSpecialFlatpaks(pakConfig)
+    print("Flatpaks installed.")
 
 # runs the setup steps for updating the home directory
 def setupHomeDirectory():
@@ -175,7 +298,9 @@ def setupAfter():
 
 # runs all setup steps
 def setupAll():
+    setupRpmFusion()
     setupPackages()
+    setupFlatpaks()
     setupFonts()
     setupHomeDirectory()
     setupAfter()
@@ -184,8 +309,10 @@ def main():
     prompt = ("Press a key to select a setup option:\n"
         "a - set up all\n"
         "d - set up home directory only\n"
-        "p - set up packages only\n"
         "f - set up fonts only\n"
+        "k - set up flatpaks only\n"
+        "p - set up packages only\n"
+        "r - set up rpm fusion\n"
         "z - run options.after() only\n"
         "q - quit\n")
 
@@ -193,8 +320,10 @@ def main():
 
     actionMap = {
         "a": setupAll,
+        "r": setupRpmFusion,
         "d": setupHomeDirectory,
         "p": setupPackages,
+        "k": setupFlatpaks,
         "f": setupFonts,
         "z": setupAfter,
     }
