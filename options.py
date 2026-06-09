@@ -24,6 +24,7 @@ pkgs = [
     "mediawriter",
     "pavucontrol",
     "thunderbird",
+    "gnome-font-viewer",
     "steam",
     {
         "pkg": "ffmpeg-free",
