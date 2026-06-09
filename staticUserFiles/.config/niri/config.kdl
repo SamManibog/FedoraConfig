@@ -230,6 +230,7 @@ spawn-sh-at-startup "systemctl --user start plasma-polkit-agent"
 spawn-sh-at-startup "systemctl --user start waybar"
 spawn-sh-at-startup "systemctl --user start blueman-applet"
 spawn-sh-at-startup "swaybg -i .config/background.png"
+spawn-sh-at-startup "mkfifo /tmp/wobpipe ; tail -f /tmp/wobpipe | wob"
 spawn-at-startup "swayidle"
 spawn-at-startup "swaync"
 spawn-at-startup "nm-applet"
@@ -294,9 +295,9 @@ window-rule {
 
 // fix focus ring appearing slightly off on certain windows
 window-rule {
-    match app-id="org.gnome.Calendar"
+    match app-id="net.thunderbird.Thunderbird"
 
-    open-maximized false
+    open-maximized true
 }
 
 // fix focus ring appearing slightly off on certain windows
@@ -384,18 +385,18 @@ binds {
 
     // volume keys mappings for PipeWire & WirePlumber.
     // The allow-when-locked=true property makes them work even when the session is locked.
-    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02+ -l 1.0"; }
-    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02- -l 1.0"; }
-    XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
+    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02+ -l 1.0 ; python ~/.config/wob/update.py o"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02- -l 1.0 ; python ~/.config/wob/update.py o"; }
+    XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ; python ~/.config/wob/update.py o"; }
 
-    Alt+XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 0.02+ -l 2.0"; }
-    Alt+XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 0.02- -l 2.0"; }
-    Alt+XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
-    XF86AudioMicMute     allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
+    Alt+XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 0.02+ -l 2.0 ; python ~/.config/wob/update.py i"; }
+    Alt+XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 0.02- -l 2.0 ; python ~/.config/wob/update.py i"; }
+    Alt+XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle ; python ~/.config/wob/update.py i"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle ; python ~/.config/wob/update.py i"; }
 
     // brightness control keys
-    XF86MonBrightnessUp allow-when-locked=true { spawn-sh "brightnessctl s 1%+ -n 1%";}
-    XF86MonBrightnessDown allow-when-locked=true { spawn-sh "brightnessctl s 1%- -n 1%";}
+    XF86MonBrightnessUp allow-when-locked=true { spawn-sh "brightnessctl s 1%+ -n 1% ; python ~/.config/wob/update.py b";}
+    XF86MonBrightnessDown allow-when-locked=true { spawn-sh "brightnessctl s 1%- -n 1% ; python ~/.config/wob/update.py b";}
     Alt+XF86MonBrightnessUp repeat=false allow-when-locked=true { spawn-sh "cat ~/.config/niri/toggle-nightmode-weak.sh | sh"; }
     Alt+XF86MonBrightnessDown repeat=false allow-when-locked=true { spawn-sh "cat ~/.config/niri/toggle-nightmode-strong.sh | sh"; }
 
