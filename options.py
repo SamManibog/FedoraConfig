@@ -21,6 +21,17 @@ pkgs = [
     "blueman",
     "google-roboto-fonts",
     "pavucontrol",
+    "thunderbird",
+    {
+        "pkg": [
+            "libreoffice-writer",
+            "libreoffice-calc",
+            "libreoffice-impress",
+            "libreoffice-draw",
+            "libreoffice-base",
+            "libreoffice-math",
+        ],
+    },
     {
         "pkg": [
             "libimobiledevice",

@@ -42,7 +42,7 @@ input {
 
     mouse {
         // off
-        // natural-scroll
+        natural-scroll
         // accel-speed 0.2
         // accel-profile "flat"
         // scroll-method "no-scroll"
@@ -287,6 +287,23 @@ layer-rule {
 window-rule {
     geometry-corner-radius 16
     clip-to-geometry true
+
+    open-maximized false
+    open-maximized-to-edges false
+}
+
+// fix focus ring appearing slightly off on certain windows
+window-rule {
+    match app-id="org.gnome.Calendar"
+
+    open-maximized false
+}
+
+// fix focus ring appearing slightly off on certain windows
+window-rule {
+    match app-id="org.gnome.Calculator"
+
+    default-column-width { proportion 0.33333; }
 }
 
 // Work around WezTerm's initial configure bug
@@ -351,8 +368,11 @@ binds {
     Mod+Return repeat=false hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
     Mod+A repeat=false hotkey-overlay-title="Run an Application" { spawn-sh "pkill fuzzel || fuzzel"; }
     Mod+I repeat=false hotkey-overlay-title="Open a Browser: firefox" { spawn "firefox"; }
-    // Mod+S hotkey-overlay-title="Restart Waybar" { spawn-sh "systemctl --user restart waybar"; }
+    Mod+E repeat=false hotkey-overlay-title="Open Files: nautilus" { spawn "nautilus"; }
+    Mod+Y repeat=false hotkey-overlay-title="Open Files: yazi" { spawn-sh "kitty --hold yazi"; }
     Mod+M hotkey-overlay-title="Open Control Panel" { spawn-sh "swaync-client -t -sw"; }
+
+    // Mod+S hotkey-overlay-title="Restart Waybar" { spawn-sh "systemctl --user restart waybar"; }
 
     // System controls
     Super+Alt+L repeat=false hotkey-overlay-title="Lock the session: swaylock" { spawn "swaylock"; }
@@ -541,8 +561,8 @@ binds {
 
     Mod+F repeat=false { maximize-column; }
 
-    Mod+Shift+F repeat=false { fullscreen-window; }
-    Mod+Ctrl+F { expand-column-to-available-width; }
+    Mod+Ctrl+F repeat=false { fullscreen-window; }
+    Mod+Shift+F repeat=false { maximize-window-to-edges; }
 
     Mod+C { center-column; }
 
