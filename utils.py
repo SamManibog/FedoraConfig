@@ -70,7 +70,14 @@ def askYesNo(prompt):
 # after is a callback with two positional parameters
 #   1) path - the path of the file being written or skipped (the destination)
 #   2) written - whether or not a write operation occurred
-def cpImproved(src, dst, recursive=True, allowOverwrite=True, after=lambda *args: None):
+def cpImproved(
+    src,
+    dst,
+    recursive=True,
+    allowOverwrite=True,
+    alwaysAsk=False,
+    after=lambda *args: None
+):
     srcPath = Path(src)
     dstPath = Path(dst)
 
@@ -109,10 +116,15 @@ def cpImproved(src, dst, recursive=True, allowOverwrite=True, after=lambda *args
                 after(dstPath, True)
 
         else:
-            # automatic copy because dst does not exist
-            subprocess.run(f"cp {str(srcPath)} {str(dstPath)}", shell=True)
-            print(f"wrote '{str(dstPath)}'")
-            after(dstPath, True)
+            # dst does not exist
+            shouldWrite = True
+            if alwaysAsk:
+                shouldWrite = askYesNo(f"write file '{str(dstPath)}'?")
+
+            if shouldWrite:
+                subprocess.run(f"cp {str(srcPath)} {str(dstPath)}", shell=True)
+                print(f"wrote '{str(dstPath)}'")
+                after(dstPath, True)
 
     elif srcPath.is_dir():
         # inductive case: src is a folder
@@ -120,9 +132,16 @@ def cpImproved(src, dst, recursive=True, allowOverwrite=True, after=lambda *args
         didWrite = False
 
         if not dstPath.is_dir():
-            subprocess.run(f"mkdir {str(dstPath)}", shell=True)
-            print(f"made directory '{str(dstPath)}'")
-            didWrite = True
+            shouldWrite = True
+            if alwaysAsk:
+                shouldWrite = askYesNo(f"make dirctory '{str(dstPath)}'?")
+
+            if shouldWrite:
+                subprocess.run(f"mkdir {str(dstPath)}", shell=True)
+                print(f"made directory '{str(dstPath)}'")
+                didWrite = True
+            else:
+                return
 
         if not recursive:
             return
@@ -133,6 +152,7 @@ def cpImproved(src, dst, recursive=True, allowOverwrite=True, after=lambda *args
                     srcPath / entry.name,
                     dstPath / entry.name,
                     allowOverwrite=allowOverwrite,
+                    alwaysAsk=alwaysAsk,
                     after=after
                 )
 

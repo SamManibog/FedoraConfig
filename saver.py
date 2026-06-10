@@ -167,7 +167,7 @@ def main(args):
         # recursively copy selected paths into the destination
         for src in argObject["paths"]:
             dst = logicalHome / src.relative_to(Path.home())
-            utils.cpImproved(src, dst)
+            utils.cpImproved(src, dst, alwaysAsk=True)
 
     except KeyboardInterrupt:
         print("Stopping: interrupt recieved.")
