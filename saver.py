@@ -1,6 +1,11 @@
 # defines code related to saving files to setup
 
+import subprocess
+from pathlib import Path
+import sys
+
 import options
+import utils
 
 helpText = ("Usage: saver.py [FLAGS] [PATHS...]\n"
     "Copy a file or directory from the home directory into the config\n"
@@ -35,12 +40,12 @@ def parseArgs(args):
 
     def parseGroup(flagGroup):
         for f in flagGroup:
-            if dstFlags.find(f) != -1:
+            if f in dstFlags:
                 if "saveDst" in argObject:
                     raise ValueError("You can only specify one of -s or -t")
                 else:
                     argObject["saveDst"] = dstFlags[f]
-            elif dstFlags.find(f) != -1:
+            elif f in dstFlags:
                 if "sort" in argObject:
                     raise ValueError("You can only specify one of -a, -A, -o, or -r")
                 else:
@@ -50,14 +55,20 @@ def parseArgs(args):
 
     last_idx = None
     for idx in range(1, len(args)):
+        flag = args[idx]
+        if flag == "--help":
+            print(helpText)
+            sys.exit()
+
         if flag[:1] == "-":
             parseGroup(flag[1:])
         else:
             last_idx = idx
+            break;
 
     if last_idx != None:
         for idx in range(last_idx, len(args)):
-            paths.push(args[idx])
+            argObject["paths"].append(Path.cwd() / Path(args[idx]))
 
     if not "sort" in argObject:
         argObject["sort"] = "recent"
@@ -67,19 +78,22 @@ def parseArgs(args):
 # get all entries in the current directory in sorted order
 def getEntryList(sort):
     keyMap = {
-        "recent": lambda x: x.stat().st_mtime,
-        "oldest": lambda x: x.stat().st_mtime,
-        "alphabetical": lambda x: x.stat().st_mtime,
-        "reverse-alphabetical": lambda x: x.stat().st_mtime,
+        "recent": lambda x: x.stat(follow_symlinks=False).st_mtime,
+        "oldest": lambda x: x.stat(follow_symlinks=False).st_mtime,
+        "alphabetical": lambda x: x.stat(follow_symlinks=False).st_mtime,
+        "reverse-alphabetical": lambda x: x.stat(follow_symlinks=False).st_mtime,
     }
-    reverseMap {
+    reverseMap = {
         "reverse-alphabetical": True,
         "recent": True,
     }
+
     entries = []
     for entry in Path.cwd().iterdir():
-        entries.push(entries)
+        if not entry.is_symlink():
+            entries.append(entry)
     entries.sort(key=keyMap[sort], reverse=reverseMap[sort])
+
     return entries
 
 # ask the user for selected entries
@@ -97,13 +111,13 @@ def askSelectedEntries(entries):
         inputStr = input(prompt)
         inputStrList = inputStr.split()
         inputList = []
-        for input in inputStrList:
-            num = int(input)
+        for inputStr in inputStrList:
+            num = int(inputStr)
             if num < 0 or num >= maxListed:
-                print(f"Got invalid selection: {input}.\n")
+                print(f"Got invalid selection: {inputStr}.\n")
                 continue;
             else:
-                inputList.push(num)
+                inputList.append(entries[num])
         if inputList:
             return inputList
         else:
@@ -123,8 +137,8 @@ def askDstType():
 
 def main(args):
     logicalHomeMap = {
-        "static": options.staticUserFilesPath
-        "template": options.templateUserFilesPath
+        "static": options.staticUserFilesPath,
+        "template": options.templateUserFilesPath,
     }
 
     try:
@@ -145,13 +159,14 @@ def main(args):
 
         # make directories up to the parent directory
         logicalHome = logicalHomeMap[argObject["saveDst"]]
-        srcHomeRelativeParent = argObject["paths"].parent.relative_to(Path.home())
-        dstParent = logicalHome / srcHomeRelativeParent;
-        subprocess.run(f"mkdir -p {str(dstParent)}")
+        srcHomeRelativeParent = argObject["paths"][0].parent.relative_to(Path.home())
+        dstParent = logicalHome / srcHomeRelativeParent
+
+        subprocess.run(f"mkdir -p {str(dstParent)}", shell=True)
 
         # recursively copy selected paths into the destination
         for src in argObject["paths"]:
-            dst = logicalHome / path.relative_to(Path.home())
+            dst = logicalHome / src.relative_to(Path.home())
             utils.cpImproved(src, dst)
 
     except KeyboardInterrupt:

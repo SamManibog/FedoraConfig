@@ -2,6 +2,7 @@
 
 import os
 import sys
+import subprocess
 from pathlib import Path
 import filecmp
 import difflib
@@ -23,7 +24,7 @@ def eprint(obj):
     print(obj, file=sys.stderr)
 
 # prints a colored diff of the two lists of strings
-def printColoredDiff(file1_lines, file2_lines, fromfile="file1", tofile="file2"):
+def printColoredDiff(file1_lines, file2_lines, fromfile='', tofile=''):
     # define ANSI color
     RESET = "\033[0m"
     RED = "\033[91m"
@@ -38,8 +39,12 @@ def printColoredDiff(file1_lines, file2_lines, fromfile="file1", tofile="file2")
         tofile=tofile
     )
 
+    diffLines = list(diff)
+    if fromfile == '' or tofile == '':
+        diffLines = diffLines[2:]
+
     # Print each line with corresponding colors
-    for line in diff:
+    for line in diffLines:
         stripped = line.rstrip('\n')
         if stripped.startswith('+'):
             print(f"{GREEN}{stripped}{RESET}")
@@ -92,10 +97,8 @@ def cpImproved(src, dst, recursive=True, allowOverwrite=True, after=lambda *args
                 print(f"attempting to overwrite '{str(dstPath)}'")
                 print("difference:")
                 printColoredDiff(
-                    srcLines, 
                     dstLines, 
-                    fromfile=str(srcPath), 
-                    tofile=str(dstPath)
+                    srcLines
                 )
 
             # prompt user to confirm copy

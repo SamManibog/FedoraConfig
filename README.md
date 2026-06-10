@@ -37,5 +37,11 @@ directory.
 This directory is useful for applying file permissions, dynamic configurations, or
 downloading web content.
 
+## Useful Bash Functions
 
+This configuration provides two functions to your .bashrc: home-setup and home-copy.
+
+home-setup is an alias for the install script, `python setup.py`.
+
+home-copy is an alias for `python saver.py`. Run `home-copy --help` for more information.
 
