@@ -246,23 +246,19 @@ def fileAfterRunner(dstPath, written):
 
 # runs the setup steps for updating the home directory
 def setupHomeDirectory():
-    # copy this directory structure recursively and interactively into home, as long as this script isn't running from home directory
-    if Path(os.getcwd()) == Path.home():
-        print("File setup skipped (running from home directory)")
-    else:
-        print("Setting up files...")
-        utils.cpImproved(
-            options.staticUserFilesPath,
-            Path.home(),
-            after=fileAfterRunner
-        )
-        utils.cpImproved(
-            options.templateUserFilesPath,
-            Path.home(),
-            allowOverwrite=False,
-            after=fileAfterRunner
-        )
-        print("File setup complete")
+    print("Setting up files...")
+    utils.cpImproved(
+        options.staticUserFilesPath,
+        Path.home(),
+        after=fileAfterRunner
+    )
+    utils.cpImproved(
+        options.templateUserFilesPath,
+        Path.home(),
+        allowOverwrite=False,
+        after=fileAfterRunner
+    )
+    print("File setup complete")
 
 # installs a single font to the machine, given as a path
 def installFontByPath(path):
