@@ -39,6 +39,6 @@ function y() {
 
 # make setup.py global
 function home-setup() {
-    cd ~/FedoraConfig/ && python setup.py
+     python ~/FedoraConfig/setup.py
 }
 
