@@ -114,12 +114,12 @@ def cpImproved(src, dst, recursive=True, allowOverwrite=True, after=lambda *args
     elif srcPath.is_dir():
         # inductive case: src is a folder
 
-        if dstPath.is_dir():
-            after(dstPath, False)
-        else:
+        didWrite = False
+
+        if not dstPath.is_dir():
             subprocess.run(f"mkdir {str(dstPath)}", shell=True)
             print(f"made directory '{str(dstPath)}'")
-            after(dstPath, True)
+            didWrite = True
 
         if not recursive:
             return
@@ -132,5 +132,9 @@ def cpImproved(src, dst, recursive=True, allowOverwrite=True, after=lambda *args
                     allowOverwrite=allowOverwrite,
                     after=after
                 )
+
+        after(dstPath, didWrite)
+
+
     else:
         eprint(f"Copy source path '{str(srcPath)}' not found.")
