@@ -115,16 +115,17 @@ fontUrls = [
     "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/CommitMono.zip",
 ]
 
+from pathlib import Path
 # the relative location to look for config files to copy into the home directory
 # these files will ask permission before overwriting
-staticUserFilesPath = "./staticUserFiles"
+staticUserFilesPath = Path(__file__).parent / "./staticUserFiles"
 
 # the relative location to look for config files to copy into the home directory
 # these files will be skipped if already present in the home directory
-templateUserFilesPath = "./templateUserFiles"
+templateUserFilesPath = Path(__file__).parent / "./templateUserFiles"
 
 # the relative location to look for after-write functions
-afterUserFilesPath = "./afterUserFiles"
+afterUserFilesPath = Path(__file__).parent / "./afterUserFiles"
 
 # the function to run after all config functions are run
 import subprocess

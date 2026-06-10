@@ -66,8 +66,8 @@ def askYesNo(prompt):
 #   1) path - the path of the file being written or skipped (the destination)
 #   2) written - whether or not a write operation occurred
 def cpImproved(src, dst, recursive=True, allowOverwrite=True, after=lambda *args: None):
-    srcPath = Path(src).expanduser()
-    dstPath = Path(dst).expanduser()
+    srcPath = Path(src)
+    dstPath = Path(dst)
 
     if srcPath.is_file():
         # base case: src is a file
@@ -134,7 +134,5 @@ def cpImproved(src, dst, recursive=True, allowOverwrite=True, after=lambda *args
                 )
 
         after(dstPath, didWrite)
-
-
     else:
         eprint(f"Copy source path '{str(srcPath)}' not found.")

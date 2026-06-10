@@ -228,6 +228,7 @@ def setupFlatpaks():
         installSpecialFlatpaks(pakConfig)
     print("Flatpaks installed.")
 
+# the callback function used to run file after-copy functions
 def fileAfterRunner(dstPath, written):
     # the path of the associated after module will be
     homeRelativePath = Path(dstPath).relative_to(Path.home())
@@ -246,18 +247,18 @@ def fileAfterRunner(dstPath, written):
 # runs the setup steps for updating the home directory
 def setupHomeDirectory():
     # copy this directory structure recursively and interactively into home, as long as this script isn't running from home directory
-    if os.getcwd() == os.path.expanduser("~"):
+    if Path(os.getcwd()) == Path.home():
         print("File setup skipped (running from home directory)")
     else:
         print("Setting up files...")
         utils.cpImproved(
             options.staticUserFilesPath,
-            "~",
+            Path.home(),
             after=fileAfterRunner
         )
         utils.cpImproved(
             options.templateUserFilesPath,
-            "~",
+            Path.home(),
             allowOverwrite=False,
             after=fileAfterRunner
         )
@@ -265,11 +266,11 @@ def setupHomeDirectory():
 
 # installs a single font to the machine, given as a path
 def installFontByPath(path):
-    fontDir = "~/.local/share/fonts"
+    fontDir = Path.home() / ".local/share/fonts"
 
     extension = "".join(path.suffixes)
     name = path.stem
-    outputPath = os.path.join(fontDir, name)
+    outputPath = os.path.join(str(fontDir), name)
 
     def installZip(path):
         subprocess.run(f"unzip {str(path)} -d {outputPath}", shell=True)
@@ -285,7 +286,7 @@ def installFontByPath(path):
 
 # runs the setup steps for downloading and installing fonts
 def installFonts():
-    fontDir = "~/.local/share/fonts"
+    fontDir = str(Path.home() / ".local/share/fonts")
     subprocess.run(f"mkdir -p {fontDir}", shell=True)
 
     for url in options.fontUrls:
