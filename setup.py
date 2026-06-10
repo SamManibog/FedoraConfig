@@ -15,6 +15,7 @@ from pathlib import Path
 import tempfile
 import subprocess
 import re
+import importlib.util
 
 import options
 import utils
@@ -227,6 +228,21 @@ def setupFlatpaks():
         installSpecialFlatpaks(pakConfig)
     print("Flatpaks installed.")
 
+def fileAfterRunner(dstPath, written):
+    # the path of the associated after module will be
+    homeRelativePath = Path(dstPath).relative_to(Path.home())
+    configAfterPath = (Path(options.afterUserFilesPath) / homeRelativePath).resolve()
+    modulePath = Path(str(configAfterPath) + ".py")
+
+    if modulePath.is_file():
+        # import the module
+        spec = importlib.util.spec_from_file_location("after", modulePath)
+        afterModule = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(afterModule)
+
+        if afterModule.always() or written:
+            afterModule.callback(Path(dstPath))
+
 # runs the setup steps for updating the home directory
 def setupHomeDirectory():
     # copy this directory structure recursively and interactively into home, as long as this script isn't running from home directory
@@ -234,8 +250,17 @@ def setupHomeDirectory():
         print("File setup skipped (running from home directory)")
     else:
         print("Setting up files...")
-        utils.cpImproved(options.staticUserFilesPath, "~")
-        utils.cpImproved(options.templateUserFilesPath, "~", allowOverwrite=False)
+        utils.cpImproved(
+            options.staticUserFilesPath,
+            "~",
+            after=fileAfterRunner
+        )
+        utils.cpImproved(
+            options.templateUserFilesPath,
+            "~",
+            allowOverwrite=False,
+            after=fileAfterRunner
+        )
         print("File setup complete")
 
 # installs a single font to the machine, given as a path

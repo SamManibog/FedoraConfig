@@ -62,7 +62,10 @@ def askYesNo(prompt):
 
 # improve the linux cp function by skipping copy if contents match
 # if the copy replaces a file with different contents, prints a diff
-def cpImproved(src, dst, recursive=True, allowOverwrite=True):
+# after is a callback with two positional parameters
+#   1) path - the path of the file being written or skipped (the destination)
+#   2) written - whether or not a write operation occurred
+def cpImproved(src, dst, recursive=True, allowOverwrite=True, after=lambda *args: None):
     srcPath = Path(src).expanduser()
     dstPath = Path(dst).expanduser()
 
@@ -73,10 +76,12 @@ def cpImproved(src, dst, recursive=True, allowOverwrite=True):
             # check if files are different
             if filecmp.cmp(srcPath, dstPath, shallow=False):
                 print(f"skipped '{str(dstPath)}' (exact copy)")
+                after(dstPath, False)
                 return
 
             if not allowOverwrite:
                 print(f"skipped '{str(dstPath)}' (overwrite disabled)")
+                after(dstPath, False)
                 return
 
             # get a diff between the files
@@ -98,24 +103,34 @@ def cpImproved(src, dst, recursive=True, allowOverwrite=True):
             if askYesNo(f"overwrite '{str(dstPath)}'?"):
                 subprocess.run(f"cp {str(srcPath)} {str(dstPath)}", shell=True)
                 print(f"wrote '{str(dstPath)}'")
+                after(dstPath, True)
 
         else:
             # automatic copy because dst does not exist
             subprocess.run(f"cp {str(srcPath)} {str(dstPath)}", shell=True)
             print(f"wrote '{str(dstPath)}'")
+            after(dstPath, True)
 
     elif srcPath.is_dir():
         # inductive case: src is a folder
 
-        if not dstPath.is_dir():
+        if dstPath.is_dir():
+            after(dstPath, False)
+        else:
             subprocess.run(f"mkdir {str(dstPath)}", shell=True)
             print(f"made directory '{str(dstPath)}'")
+            after(dstPath, True)
 
         if not recursive:
             return
 
         with os.scandir(srcPath) as entryIter:
             for entry in entryIter:
-                cpImproved(srcPath / entry.name, dstPath / entry.name, allowOverwrite=allowOverwrite)
+                cpImproved(
+                    srcPath / entry.name,
+                    dstPath / entry.name,
+                    allowOverwrite=allowOverwrite,
+                    after=after
+                )
     else:
         eprint(f"Copy source path '{str(srcPath)}' not found.")

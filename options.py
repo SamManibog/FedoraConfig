@@ -123,6 +123,9 @@ staticUserFilesPath = "./staticUserFiles"
 # these files will be skipped if already present in the home directory
 templateUserFilesPath = "./templateUserFiles"
 
+# the relative location to look for after-write functions
+afterUserFilesPath = "./afterUserFiles"
+
 # the function to run after all config functions are run
 import subprocess
 def after():

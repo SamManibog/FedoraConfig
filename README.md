@@ -23,11 +23,16 @@ Note: Make sure to run these exact commands. Some functionality requires that th
 
 ## Using afterUserFiles
 
-Each file in afterUserFiles should be a .py files that corresponds to a file or directory in
+Each file in afterUserFiles should be a .py file that corresponds to a file or directory in
 staticUserFiles or templateUserFiles. Its name should be an exact match of the corresponding
-file or directory, but with .py appended. Each of these files will be imported as a python
-module and then called using the '()' operator. This call will pass a single parameter that
-matches the path of the newly written file or directory.
+file or directory, but with ".py" appended.
+
+Each of these files will be imported as a python module, which must have two functions:
+"always" and "callback". If "always" returns true, then "callback" will be called every
+time the desktop loading step occurs. If "always" returns false, then "callback" will be
+be called only when the corresponding file is overwritten. "callback" should take a single
+positional argument, which will be the Path object of the corresponding file in the home
+directory.
 
 This directory is useful for applying file permissions, dynamic configurations, or
 downloading web content.
