@@ -12,6 +12,7 @@
 * {
     min-height: 24px;
     min-width: 0px;
+    color: @fg1;
     font-family: Roboto, Commit Mono Nerd Font;
     font-weight: normal;
     font-size: 15px;
@@ -23,6 +24,19 @@ window {
 
 window#waybar {
     background-color: @bg1;
+}
+
+tooltip {
+    background-color: rgba(255, 255, 255, 0.0);
+    border: none;
+}
+
+tooltip box {
+    padding: 8px;
+    background: @bg1;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.5);
 }
 
 /*-------------------------------------------------
@@ -45,10 +59,12 @@ window#waybar.empty #window {
 *-----------------------------------------------*/
 #workspaces button {
     color: @fg1;
-    background-color: @bg3;
+    background: @bg3;
     border-radius: 0px;
     border: none;
     padding: 0px 8px;
+    text-shadow: none;
+    transition: background 0.2s ease-out;
 }
 
 #workspaces button:nth-last-child(1) {
@@ -59,12 +75,11 @@ window#waybar.empty #window {
 }
 
 #workspaces button.active {
-    background-color: @ac1;
+    background: @ac1;
 }
 
 #workspaces button:hover {
-    border: none;
-    background-color: @ac2;
+    background: @ac2;
 }
 
 .modules-left > * > * {

@@ -1,9 +1,9 @@
 {
     "layer": "top",
     "exclusive": true,
-    "modules-left": [ "niri/workspaces", "battery", "cpu", "memory", "pulseaudio#out", "pulseaudio#in" ],
+    "modules-left": [ "niri/workspaces", "cpu", "memory", "pulseaudio#out", "pulseaudio#in" ],
     "modules-center": [ "niri/window" ],
-    "modules-right":  [ "tray", "clock", "custom/notification" ],
+    "modules-right":  [ "tray", "clock", "battery", "power-profiles-daemon", "custom/notification" ],
 
     "custom/notification": {
         "tooltip": true,
@@ -37,6 +37,9 @@
     "niri/workspaces": {
         "format": "{index}",
         "hide-empty": true
+    },
+
+    "power-profiles-daemon": {
     },
 
     "group/power": {
@@ -85,6 +88,7 @@
     "memory": {
         "interval": 10,
         "format": "{percentage}% ",
+        "tooltip-format": "RAM: {used} of {total} ({percentage}%)\nSwap: {swapUsed} of {swapTotal} ({swapPercentage}%)",
         "on-click": "gnome-system-monitor -r"
     },
 
