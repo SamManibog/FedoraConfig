@@ -174,28 +174,21 @@ def main(args):
 
         # make directories up to the parent directory
         pathData = None
-        sudo = None
         if cwd_is_in_home():
             pathData = pathMap["home"]
-            sudo = False
         else:
             pathData = pathMap["system"]
-            sudo = True
 
         logicalHome = pathData[argObject["saveDst"]]
         srcHomeRelativeParent = argObject["paths"][0].parent.relative_to(pathData["actual"])
         dstParent = logicalHome / srcHomeRelativeParent
 
-        sudoPrefix = ""
-        if sudo:
-            sudoPrefix = "sudo "
-
-        subprocess.run(f"{sudoPrefix}mkdir -p {str(dstParent)}", shell=True)
+        subprocess.run(f"mkdir -p {str(dstParent)}", shell=True)
 
         # recursively copy selected paths into the destination
         for src in argObject["paths"]:
             dst = logicalHome / src.relative_to(pathData["actual"])
-            utils.cpImproved(src, dst, alwaysAsk=True, sudo=sudo)
+            utils.cpImproved(src, dst, alwaysAsk=True)
 
     except KeyboardInterrupt:
         print("Stopping: interrupt recieved.")

@@ -229,9 +229,9 @@ def setupFlatpaks():
     print("Flatpaks installed.")
 
 # the callback function used to run file after-copy functions
-def fileAfterRunner(dstPath, written, afterFilesPath):
+def fileAfterRunner(dstPath, written, afterFilesPath, actualPath):
     # the path of the associated after module will be
-    homeRelativePath = Path(dstPath).relative_to(Path.home())
+    homeRelativePath = Path(dstPath).relative_to(actualPath)
     configAfterPath = Path(afterFilesPath) / homeRelativePath
     modulePath = Path(str(configAfterPath) + ".py")
 
@@ -245,23 +245,23 @@ def fileAfterRunner(dstPath, written, afterFilesPath):
             afterModule.callback(Path(dstPath))
 
 def systemFileAfterRunner(dstPath, written):
-    fileAfterRunner(dstPath, written, options.afterSystemFilesPath)
+    fileAfterRunner(dstPath, written, options.afterSystemFilesPath, Path("/"))
 
 def homeFileAfterRunner(dstPath, written):
-    fileAfterRunner(dstPath, written, options.afterUserFilesPath)
+    fileAfterRunner(dstPath, written, options.afterUserFilesPath, Path.home())
 
 # runs the setup steps for updating system files
 def setupSystemDirectories():
     print("Setting up system files...")
     utils.cpImproved(
         options.staticSystemFilesPath,
-        Path.home(),
+        Path("/"),
         sudo=True,
         after=systemFileAfterRunner
     )
     utils.cpImproved(
         options.templateSystemFilesPath,
-        Path.home(),
+        Path("/"),
         allowOverwrite=False,
         sudo=True,
         after=systemFileAfterRunner
