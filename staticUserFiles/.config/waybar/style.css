@@ -135,17 +135,16 @@ window#waybar.empty #window {
     border-top-left-radius: 100px;
     border-bottom-left-radius: 100px;
     background-color: @bg2;
-    padding-left: 18px;
+    padding-left: 14px;
 }
 
 #tray {
     padding-right: 8px;
+    margin-left: 2px;
 }
 
 #idle_inhibitor {
-    padding: 0px;
-    padding-left: 12px;
-    padding-right: 6px;
+    padding: 1px 9px 0px 6px;
 }
 
 #custom-notification {

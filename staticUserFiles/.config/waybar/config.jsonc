@@ -3,7 +3,7 @@
     "exclusive": true,
     "modules-left": [ "niri/workspaces", "cpu", "memory", "pulseaudio#out", "pulseaudio#in" ],
     "modules-center": [ "niri/window" ],
-    "modules-right":  [ "tray", "clock", "battery", "power-profiles-daemon", "custom/notification" ],
+    "modules-right":  [ "idle_inhibitor", "tray", "clock", "battery", "power-profiles-daemon", "custom/notification" ],
 
     "custom/notification": {
         "tooltip": true,
@@ -119,11 +119,11 @@
     "idle_inhibitor": {
         "format": "{icon}",
         "format-icons": {
-            "activated": "󱙱",
-            "deactivated": "󰌾"
+            "activated": "󰾫",
+            "deactivated": "󰛊"
         },
-        "tooltip-format-activated": "Auto Lock Disabled",
-        "tooltip-format-deactivated": "Auto Lock Enabled"
+        "tooltip-format-activated": "Idling Disabled",
+        "tooltip-format-deactivated": "Idling Enabled"
     },
 
     "clock": {
