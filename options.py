@@ -118,14 +118,14 @@ fontUrls = [
 from pathlib import Path
 # the relative location to look for config files to copy into the home directory
 # these files will ask permission before overwriting
-staticUserFilesPath = Path(__file__).parent / "./staticUserFiles"
+staticUserFilesPath = Path(__file__).parent / "./userFiles/static"
 
 # the relative location to look for config files to copy into the home directory
 # these files will be skipped if already present in the home directory
-templateUserFilesPath = Path(__file__).parent / "./templateUserFiles"
+templateUserFilesPath = Path(__file__).parent / "./userFiles/template"
 
 # the relative location to look for after-write functions
-afterUserFilesPath = Path(__file__).parent / "./afterUserFiles"
+afterUserFilesPath = Path(__file__).parent / "./userFiles/after"
 
 # the function to run after all config functions are run
 import subprocess

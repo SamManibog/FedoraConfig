@@ -330,7 +330,7 @@ def setupAll():
 def main():
     prompt = ("Press a key to select a setup option:\n"
         "a - set up all\n"
-        "d - set up home directory only\n"
+        "h - set up home directory only\n"
         "f - set up fonts only\n"
         "k - set up flatpaks only\n"
         "p - set up packages only\n"
@@ -342,11 +342,11 @@ def main():
 
     actionMap = {
         "a": setupAll,
-        "r": setupRpmFusion,
-        "d": setupHomeDirectory,
-        "p": setupPackages,
-        "k": setupFlatpaks,
+        "h": setupHomeDirectory,
         "f": setupFonts,
+        "k": setupFlatpaks,
+        "p": setupPackages,
+        "r": setupRpmFusion,
         "z": setupAfter,
     }
 

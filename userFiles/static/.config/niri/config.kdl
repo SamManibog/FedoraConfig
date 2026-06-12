@@ -336,7 +336,7 @@ binds {
     // Mod+S hotkey-overlay-title="Restart Waybar" { spawn-sh "systemctl --user restart waybar"; }
 
     // System controls
-    Super+Alt+L repeat=false hotkey-overlay-title="Lock the session: swaylock" { spawn "swaylock"; }
+    Mod+Alt+L repeat=false hotkey-overlay-title="Lock the session: swaylock" { spawn-sh "niri msg action power-off-monitors ; swaylock"; }
     Mod+Alt+E { quit; }
 
     // You can also use a shell. Do this if you need pipes, multiple commands, etc.
