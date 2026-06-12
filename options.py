@@ -108,7 +108,6 @@ flatpakRemotes = [
 flatpaks = [
     "com.spotify.Client",
     "org.onlyoffice.desktopeditors",
-    "us.zoom.Zoom",
 ]
 
 # the urls to fetch fonts from
