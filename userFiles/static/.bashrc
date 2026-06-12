@@ -24,10 +24,6 @@ if [ -d ~/.bashrc.d ]; then
 fi
 unset rc
 
-# set neovim as default editor
-export EDITOR='nvim'
-export VISUAL='nvim'
-
 # yazi shell integration
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
@@ -46,4 +42,12 @@ function home-setup() {
 function home-copy() {
      python ~/FedoraConfig/saver.py "$@"
 }
+
+# set neovim as default editor
+export EDITOR='nvim'
+export VISUAL='nvim'
+
+# export cs project locations
+export PRO_PICKER_DIR_LOCATIONS='~/cs_projects'
+export PRO_PICKER_LOCATIONS='~/.config/nvim'
 
