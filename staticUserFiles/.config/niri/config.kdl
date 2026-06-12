@@ -241,6 +241,18 @@ window-rule {
     open-maximized-to-edges false
 }
 
+// fix zoom notification overlays
+window-rule {
+    match app-id="zoom"
+    match title="zoom"
+    open-floating true
+}
+window-rule {
+    match app-id="zoom"
+    match title="Meeting"
+    open-floating false
+}
+
 // fix focus ring appearing slightly off on certain windows
 window-rule {
     match app-id="net.thunderbird.Thunderbird"
