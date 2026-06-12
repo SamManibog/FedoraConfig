@@ -229,10 +229,10 @@ def setupFlatpaks():
     print("Flatpaks installed.")
 
 # the callback function used to run file after-copy functions
-def fileAfterRunner(dstPath, written):
+def fileAfterRunner(dstPath, written, afterFilesPath):
     # the path of the associated after module will be
     homeRelativePath = Path(dstPath).relative_to(Path.home())
-    configAfterPath = (Path(options.afterUserFilesPath) / homeRelativePath).resolve()
+    configAfterPath = Path(afterFilesPath) / homeRelativePath
     modulePath = Path(str(configAfterPath) + ".py")
 
     if modulePath.is_file():
@@ -244,21 +244,45 @@ def fileAfterRunner(dstPath, written):
         if afterModule.always() or written:
             afterModule.callback(Path(dstPath))
 
+def systemFileAfterRunner(dstPath, written):
+    fileAfterRunner(dstPath, written, options.afterSystemFilesPath)
+
+def homeFileAfterRunner(dstPath, written):
+    fileAfterRunner(dstPath, written, options.afterUserFilesPath)
+
+# runs the setup steps for updating system files
+def setupSystemDirectories():
+    print("Setting up system files...")
+    utils.cpImproved(
+        options.staticSystemFilesPath,
+        Path.home(),
+        sudo=True,
+        after=systemFileAfterRunner
+    )
+    utils.cpImproved(
+        options.templateSystemFilesPath,
+        Path.home(),
+        allowOverwrite=False,
+        sudo=True,
+        after=systemFileAfterRunner
+    )
+    print("System file setup complete")
+
 # runs the setup steps for updating the home directory
 def setupHomeDirectory():
-    print("Setting up files...")
+    print("Setting up home files...")
     utils.cpImproved(
         options.staticUserFilesPath,
         Path.home(),
-        after=fileAfterRunner
+        after=homeFileAfterRunner
     )
     utils.cpImproved(
         options.templateUserFilesPath,
         Path.home(),
         allowOverwrite=False,
-        after=fileAfterRunner
+        after=homeFileAfterRunner
     )
-    print("File setup complete")
+    print("Home file setup complete")
 
 # installs a single font to the machine, given as a path
 def installFontByPath(path):
@@ -324,6 +348,7 @@ def setupAll():
     setupPackages()
     setupFlatpaks()
     setupFonts()
+    setupSystemDirectories()
     setupHomeDirectory()
     setupAfter()
 
@@ -331,6 +356,7 @@ def main():
     prompt = ("Press a key to select a setup option:\n"
         "a - set up all\n"
         "h - set up home directory only\n"
+        "s - set up system directories only\n"
         "f - set up fonts only\n"
         "k - set up flatpaks only\n"
         "p - set up packages only\n"
@@ -342,6 +368,7 @@ def main():
 
     actionMap = {
         "a": setupAll,
+        "s": setupSystemDirectories,
         "h": setupHomeDirectory,
         "f": setupFonts,
         "k": setupFlatpaks,

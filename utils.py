@@ -76,10 +76,14 @@ def cpImproved(
     recursive=True,
     allowOverwrite=True,
     alwaysAsk=False,
+    sudo=False,
     after=lambda *args: None
 ):
     srcPath = Path(src)
     dstPath = Path(dst)
+    sudoPrefix = ""
+    if sudo:
+        sudoPrefix = "sudo "
 
     if srcPath.is_file():
         # base case: src is a file
@@ -111,7 +115,7 @@ def cpImproved(
             # prompt user to confirm copy
             print()
             if askYesNo(f"overwrite '{str(dstPath)}'?"):
-                subprocess.run(f"cp {str(srcPath)} {str(dstPath)}", shell=True)
+                subprocess.run(f"{sudoPrefix}cp {str(srcPath)} {str(dstPath)}", shell=True)
                 print(f"wrote '{str(dstPath)}'")
                 after(dstPath, True)
 
@@ -122,7 +126,7 @@ def cpImproved(
                 shouldWrite = askYesNo(f"write file '{str(dstPath)}'?")
 
             if shouldWrite:
-                subprocess.run(f"cp {str(srcPath)} {str(dstPath)}", shell=True)
+                subprocess.run(f"{sudoPrefix}cp {str(srcPath)} {str(dstPath)}", shell=True)
                 print(f"wrote '{str(dstPath)}'")
                 after(dstPath, True)
 
@@ -137,7 +141,7 @@ def cpImproved(
                 shouldWrite = askYesNo(f"make dirctory '{str(dstPath)}'?")
 
             if shouldWrite:
-                subprocess.run(f"mkdir {str(dstPath)}", shell=True)
+                subprocess.run(f"{sudoPrefix}mkdir {str(dstPath)}", shell=True)
                 print(f"made directory '{str(dstPath)}'")
                 didWrite = True
             else:
@@ -153,6 +157,7 @@ def cpImproved(
                     dstPath / entry.name,
                     allowOverwrite=allowOverwrite,
                     alwaysAsk=alwaysAsk,
+                    sudo=sudo,
                     after=after
                 )
 

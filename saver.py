@@ -135,10 +135,25 @@ def askDstType():
 
     return dstFlags[char]
 
+def cwd_is_in_home():
+    try:
+        Path.cwd().relative_to(Path.home())
+        return True
+    except ValueError:
+        return False
+
 def main(args):
-    logicalHomeMap = {
-        "static": options.staticUserFilesPath,
-        "template": options.templateUserFilesPath,
+    pathMap = {
+        "home": {
+            "static": options.staticUserFilesPath,
+            "template": options.templateUserFilesPath,
+            "actual": Path.home(),
+        },
+        "system": {
+            "static": options.staticSystemFilesPath,
+            "template": options.templateSystemFilesPath,
+            "actual": Path("/"),
+        }
     }
 
     try:
@@ -158,16 +173,29 @@ def main(args):
             argObject["saveDst"] = askDstType()
 
         # make directories up to the parent directory
-        logicalHome = logicalHomeMap[argObject["saveDst"]]
-        srcHomeRelativeParent = argObject["paths"][0].parent.relative_to(Path.home())
+        pathData = None
+        sudo = None
+        if cwd_is_in_home():
+            pathData = pathMap["home"]
+            sudo = False
+        else:
+            pathData = pathMap["system"]
+            sudo = True
+
+        logicalHome = pathData[argObject["saveDst"]]
+        srcHomeRelativeParent = argObject["paths"][0].parent.relative_to(pathData["actual"])
         dstParent = logicalHome / srcHomeRelativeParent
 
-        subprocess.run(f"mkdir -p {str(dstParent)}", shell=True)
+        sudoPrefix = ""
+        if sudo:
+            sudoPrefix = "sudo "
+
+        subprocess.run(f"{sudoPrefix}mkdir -p {str(dstParent)}", shell=True)
 
         # recursively copy selected paths into the destination
         for src in argObject["paths"]:
-            dst = logicalHome / src.relative_to(Path.home())
-            utils.cpImproved(src, dst, alwaysAsk=True)
+            dst = logicalHome / src.relative_to(pathData["actual"])
+            utils.cpImproved(src, dst, alwaysAsk=True, sudo=sudo)
 
     except KeyboardInterrupt:
         print("Stopping: interrupt recieved.")
