@@ -20,6 +20,7 @@ try:
 except Exception:
     pass
 
+# determine and print loading widget
 loadingClasses = '"class": "loading-updates"'
 loadingTooltip = '"tooltip": "Searching For Updates..."'
 if lastCheckedUpdates != None:
@@ -29,13 +30,11 @@ if lastCheckedUpdates != None:
     else:
         loadingClasses = '"class": [ "loading-updates", "no-updates" ]'
         loadingTooltip = '"tooltip": "Searching For Updates...\\nNo Updates Since Last Check"'
-
 loadingUpdatesJson = f'{{"text": "{loadingUpdatesIcon}", {loadingTooltip}, {loadingClasses}, "percentage": 0}}'
-
-# get temporary format
 print(loadingUpdatesJson, flush=True)
 
-# dnf updates can have special output, but all updates have lines ending in 'update'
+# dnf updates can have special output, but all updates have lines ending in 'updates'
+# so just count lines ending with 'updates'
 dnfCount = int(subprocess.run(
     "dnf --skip-file-locks check-update --refresh -q | grep -Ec 'updates$'",
     capture_output=True,
@@ -54,7 +53,7 @@ flatpakCount = int(subprocess.run(
 if flatpakCount > 0:
     flatpakCount -= 1
 
-# get actual format
+# get final update widget
 timestamp = datetime.now().strftime(timeFormat)
 if dnfCount + flatpakCount <= 0:
     noUpdatesJson = f'{{"text": "{noUpdatesIcon}", "tooltip": "No Updates\\n\\nLast Check: {timestamp}", "class": "no-updates", "percentage": 0}}'

@@ -3,6 +3,7 @@
 import subprocess
 import sys
 
+# send a notification on fail with the given body
 def onFail(body):
     subprocess.run([
         "notify-send",
@@ -12,6 +13,7 @@ def onFail(body):
     ])
     sys.exit()
 
+# the result of ip-based timezone lookup
 ipapiResult = subprocess.run(
     "curl -s https://ipapi.co/timezone",
     shell=True,
@@ -24,6 +26,7 @@ if ipapiResult.returncode != 0:
 
 timezone = ipapiResult.stdout
 
+# the result of querying recognized timezones
 timezoneListResult = subprocess.run(
     "timedatectl list-timezones",
     shell=True,
@@ -36,6 +39,7 @@ if timezoneListResult.returncode != 0:
 
 timezoneList = timezoneListResult.stdout.split("\n")[:-1]
 
+# for security, ensure that timezone valid
 if timezone in timezoneList:
     subprocess.run([
         "timedatectl",
