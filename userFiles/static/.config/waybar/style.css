@@ -138,9 +138,16 @@ window#waybar.empty #window {
     background-color: @bg2;
 }
 
-#tray {
-    padding-right: 4px;
+#clock {
     margin-left: 2px;
+    margin-right: 2px;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+#tray {
+    padding-right: 2px;
+    margin-left: 4px;
 }
 
 #idle_inhibitor {
@@ -150,7 +157,7 @@ window#waybar.empty #window {
 
 #custom-notification {
     padding: 0px 16px 0px 16px;
-    margin-left: 8px;
+    margin-left: 4px;
     border-top-left-radius: 100px;
     border-bottom-left-radius: 100px;
     background-color: @bg3;
