@@ -17,14 +17,15 @@ Note: Make sure to run these exact commands. Some functionality requires that th
 
  - setup.py - the installation script for this configuration.
  - options.py - user-specifiable options for this configuration.
- - staticUserFiles - a directory containing files to be copied exactly to the home directory
- - templateUserFiles - like static user files, but will never overwrite existing files
- - afterUserFiles - a directory containing .py for running functions after files are written or overwritten
+ - userFiles & systemFiles - directories used to fill the home and root directories, respectively. These directories have the following structure:
+     - static - a directory containing files to be copied exactly to the root or hoome directory
+     - template - like static, but will never overwrite existing files
+     - after - a directory containing .py files for running functions after files are written or overwritten
 
-## Using afterUserFiles
+## Using "after" Directories
 
-Each file in afterUserFiles should be a .py file that corresponds to a file or directory in
-staticUserFiles or templateUserFiles. Its name should be an exact match of the corresponding
+Each file in an "after" directory should be a .py file that corresponds to a file or directory in
+the associated static or template directories. Its name should be an exact match of the corresponding
 file or directory, but with ".py" appended.
 
 Each of these files will be imported as a python module, which must have two functions:
