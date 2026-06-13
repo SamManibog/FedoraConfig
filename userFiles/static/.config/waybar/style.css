@@ -4,6 +4,7 @@
 
 @define-color ac1 rgba(90, 150, 150, 1.0);
 @define-color ac2 rgba(150, 90, 90, 1.0);
+@define-color warn rgba(200, 96, 96, 1.0);
 @define-color fg1 rgba(240, 240, 240, 1.0);
 @define-color bg1 rgba(50, 50, 50, 1.0); 
 @define-color bg2 rgba(80, 80, 80, 1.0); 
@@ -135,16 +136,16 @@ window#waybar.empty #window {
     border-top-left-radius: 100px;
     border-bottom-left-radius: 100px;
     background-color: @bg2;
-    padding-left: 14px;
 }
 
 #tray {
-    padding-right: 8px;
+    padding-right: 4px;
     margin-left: 2px;
 }
 
 #idle_inhibitor {
     padding: 1px 9px 0px 6px;
+    font-size: 18px;
 }
 
 #custom-notification {
@@ -155,3 +156,12 @@ window#waybar.empty #window {
     background-color: @bg3;
 }
 
+#custom-updates {
+    padding: 1px 9px 0px 4px;
+    font-size: 22px;
+    border-radius: 100px;
+}
+
+#custom-updates.has-updates {
+    background-color: @warn;
+}
