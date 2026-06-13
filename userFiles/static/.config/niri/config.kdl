@@ -334,7 +334,6 @@ binds {
     Mod+A repeat=false hotkey-overlay-title="Run an Application" { spawn-sh "pkill fuzzel || fuzzel"; }
     Mod+I repeat=false hotkey-overlay-title="Open a Browser: firefox" { spawn "firefox"; }
     Mod+E repeat=false hotkey-overlay-title="Open Files: nautilus" { spawn "nautilus"; }
-    Mod+Y repeat=false hotkey-overlay-title="Open Files: yazi" { spawn-sh "kitty --hold yazi"; }
     Mod+M hotkey-overlay-title="Open Control Panel" { spawn-sh "swaync-client -t -sw"; }
 
     // Mod+S hotkey-overlay-title="Restart Waybar" { spawn-sh "systemctl --user restart waybar"; }
