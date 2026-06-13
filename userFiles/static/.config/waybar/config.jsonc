@@ -129,7 +129,8 @@
     "clock": {
         "format": "{:%I:%M:%S - %a %b %d}",
         "interval": 1,
-        "tooltip": false
+        "tooltip": false,
+        "on-click": "gnome-calendar"
     },
 
     "hyprland/workspaces": {
