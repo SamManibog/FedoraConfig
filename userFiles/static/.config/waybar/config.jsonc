@@ -120,8 +120,8 @@
     "pulseaudio#in": {
         "on-click": "pavucontrol",
         "format": "{format_source}",
-        "format-source": "{volume}% 󰍬",
-        "format-source-muted": "0% 󰍭",
+        "format-source": "{volume}% <span font=\"17px\">󰍬</span>",
+        "format-source-muted": "0% <span font=\"17px\">󰍭</span>",
         "tooltip": false,
         "scroll-step": 0
     },
