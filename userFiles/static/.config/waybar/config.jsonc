@@ -27,8 +27,12 @@
     },
 
     "custom/updates": {
-        "exec": "check-updates.py",
+        "exec": "flock -n /tmp/waybar-check-updates.py.lock waybar-check-updates.py",
+        "exec-on-event": false,
+        "on-click-right": "pkill waybar -SIGRTMIN+4",
+        "on-click": "kitty --hold waybar-update-all.py",
         "restart-interval": 3600,
+        "signal": 4,
         "return-type": "json"
     },
 
