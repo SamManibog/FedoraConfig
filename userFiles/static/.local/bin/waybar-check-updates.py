@@ -51,15 +51,13 @@ dnfCount = int(subprocess.run(
 ).stdout)
 
 # flatpak updates output a table if updates are found
-# we just need to count lines except the header
+# we just need to count lines except the header here we count newline chars
 flatpakCount = int(subprocess.run(
     "flatpak remote-ls --updates | wc -l",
     capture_output=True,
     text=True,
     shell=True
 ).stdout)
-if flatpakCount > 0:
-    flatpakCount -= 1
 
 # if we don't have internet print no internet widget
 hasInternet = subprocess.run(
