@@ -170,6 +170,6 @@ window#waybar.empty #window {
     border-radius: 100px;
 }
 
-#custom-updates.has-updates {
+#custom-updates.has-security-updates {
     background-color: @warn;
 }

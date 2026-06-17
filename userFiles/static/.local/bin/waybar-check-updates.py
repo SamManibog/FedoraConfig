@@ -7,7 +7,7 @@ import sys
 statePath = "/tmp/waybar-check-updates"
 
 timeFormat = "%I:%M %p"
-pendingUpdatesIcon = "󱑥"
+hasUpdatesIcon = "󱑥"
 loadingUpdatesIcon = "󰦗"
 noUpdatesIcon = "󰸡"
 noInternetIcon = "󰗖"
@@ -33,7 +33,7 @@ loadingTooltip = '"tooltip": "Searching For Updates..."'
 if lastCheckedUpdates != None:
     if lastCheckedUpdates > 0:
         loadingClasses = '"class": [ "loading-updates", "has-updates" ]'
-        loadingTooltip = f'"tooltip": "Searching For Updates...\\n\\nUpdates Since Last Check: {lastCheckedUpdates}\\nLast Check: {lastCheckedTime}"'
+        loadingTooltip = f'"tooltip": "Searching For Updates...\\n\\n{lastCheckedUpdates} Updates Since Last Check\\nLast Checked at {lastCheckedTime}"'
     else:
         loadingClasses = '"class": [ "loading-updates", "no-updates" ]'
         loadingTooltip = f'"tooltip": "Searching For Updates...\\n\\nNo Updates Since Last Check.\\nLast Checked: {lastCheckedTime}"'
@@ -49,6 +49,13 @@ dnfCount = int(subprocess.run(
     text=True,
     shell=True
 ).stdout)
+dnfSecurityCount = int(subprocess.run(
+    "dnf --skip-file-locks check-update --security -q | grep -Ec 'updates$'",
+    capture_output=True,
+    text=True,
+    shell=True
+).stdout)
+dnfOtherCount = dnfCount - dnfSecurityCount
 
 # flatpak updates output a table if updates are found
 # we just need to count lines except the header here we count newline chars
@@ -72,10 +79,10 @@ if not hasInternet:
     if lastCheckedUpdates != None:
         if lastCheckedUpdates > 0:
             noWifiClasses = '"class": [ "no-wifi-updates", "has-updates" ]'
-            noWifiTooltip = f'"tooltip": "No Internet Service. Cannot Sync Updates.\\n\\nUpdates Since Last Check: {lastCheckedUpdates}\\nLast Check: {lastCheckedTime}"'
+            noWifiTooltip = f'"tooltip": "No Internet Service. Cannot Sync Updates.\\n\\n{lastCheckedUpdates} Updates Since Last Check\\nLast Checked at {lastCheckedTime}"'
         else:
             noWifiClasses = '"class": [ "no-wifi-updates", "no-updates" ]'
-            noWifiTooltip = f'"tooltip": "No Internet Service. Cannot Sync Updates.\\n\\nNo Updates Since Last Check.\\nLast Check: {lastCheckedTime}"'
+            noWifiTooltip = f'"tooltip": "No Internet Service. Cannot Sync Updates.\\n\\nNo Updates Since Last Check.\\nLast Checked at {lastCheckedTime}"'
 
     noInternetJson = f'{{"text": "{noInternetIcon}", {noWifiTooltip}, {noWifiClasses}, "percentage": 0}}'
     print(noInternetJson, flush=True)
@@ -84,12 +91,31 @@ if not hasInternet:
 # get final update widget
 timestamp = datetime.now().strftime(timeFormat)
 
-if dnfCount + flatpakCount <= 0:
-    noUpdatesJson = f'{{"text": "{noUpdatesIcon}", "tooltip": "No Updates.\\n\\nLast Check: {timestamp}", "class": "no-updates", "percentage": 0}}'
-    print(noUpdatesJson, flush=True)
-else:
-    json = f'{{"text": "{pendingUpdatesIcon}", "tooltip": "DNF Updates: {dnfCount}\\nFlatpak Updates: {flatpakCount}\\nTotal Updates: {dnfCount + flatpakCount}\\n\\nLast Check: {timestamp}", "class": "has-updates", "percentage": 0}}'
-    print(json, flush=True)
+# determine tooltip and classes
+tooltipCategories = []
+if dnfSecurityCount > 0:
+    tooltipCategories.append(f"{dnfSecurityCount} DNF Security Updates")
+if dnfOtherCount > 0:
+    tooltipCategories.append(f"{dnfOtherCount} Other DNF Updates")
+if flatpakCount > 0:
+    tooltipCategories.append(f"{flatpakCount} Flatpak Updates")
+
+widgetTooltip = "No Updates."
+widgetClass = '"no-updates"'
+widgetIcon = noUpdatesIcon
+if len(tooltipCategories) > 0:
+    widgetTooltip = "\\n".join(tooltipCategories)
+    widgetClass = '"has-updates"'
+    widgetIcon = hasUpdatesIcon
+    if dnfSecurityCount > 0:
+        widgetClass = '[ "has-updates", "has-security-updates" ]'
+if len(tooltipCategories) > 1:
+    widgetTooltip += f"\\nTotal: {dnfCount + flatpakCount}"
+
+widgetTooltip += f"\\n\\nLast Checked at {timestamp}"
+
+outputJson = f'{{"text": "{widgetIcon}", "tooltip": "{widgetTooltip}", "class": {widgetClass}, "percentage": 0}}'
+print(outputJson, flush=True)
 
 # save state
 with open(statePath, "w", encoding="utf-8") as stateFile:
