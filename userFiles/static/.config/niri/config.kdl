@@ -178,7 +178,6 @@ layout {
 // See the binds section below for more spawn examples.
 
 // This line starts waybar, a commonly used bar for Wayland compositors.
-spawn-sh-at-startup "systemctl --user start plasma-polkit-agent"
 spawn-sh-at-startup "systemctl --user start waybar"
 spawn-sh-at-startup "swaybg -i .config/background.png"
 spawn-sh-at-startup "mkfifo /tmp/wobpipe ; tail -f /tmp/wobpipe | wob"
@@ -186,6 +185,7 @@ spawn-sh-at-startup "sleep 0.5s ; blueman-applet"
 spawn-at-startup "swayidle"
 spawn-at-startup "swaync"
 spawn-at-startup "nm-applet"
+spawn-at-startup "/usr/libexec/xfce-polkit"
 
 // Uncomment this line to ask the clients to omit their client-side decorations if possible.
 // If the client will specifically ask for CSD, the request will be honored.
@@ -264,7 +264,14 @@ window-rule {
     open-maximized true
 }
 
-// fix focus ring appearing slightly off on certain windows
+// make polkit open floating
+window-rule {
+    match app-id="xfce-polkit"
+
+    open-floating true
+}
+
+// make calculator smaller
 window-rule {
     match app-id="org.gnome.Calculator"
 
