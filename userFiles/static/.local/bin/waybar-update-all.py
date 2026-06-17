@@ -19,4 +19,5 @@ try:
 finally:
     # send a refresh signal
     subprocess.run("pkill -SIGRTMIN+4 waybar", shell=True)
+    subprocess.run("waybar-post-update.py", shell=True)
 
