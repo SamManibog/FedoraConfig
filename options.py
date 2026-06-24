@@ -70,6 +70,7 @@ pkgs = [
     {
         "pkg": [
             "niri",
+            "wob",
             "xfce-polkit",
             "waybar",
             "wpctl",
