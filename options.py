@@ -23,6 +23,7 @@ pkgs = [
     "mediawriter",
     "pavucontrol",
     "thunderbird",
+    "tmux",
     "gnome-font-viewer",
     "steam",
     {
