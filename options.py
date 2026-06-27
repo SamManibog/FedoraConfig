@@ -36,6 +36,7 @@ pkgs = [
     },
     {
         "pkg": [
+            "obs-studio",
             "audacity",
             "blender",
             "gimp",
