@@ -5,12 +5,13 @@ import subprocess
 # fix grub timeout settings after a potential kernel update
 def fixGrubTimeout():
     grubSettings = '''GRUB_TIMEOUT=0
+GRUB_TIMEOUT_STYLE=hidden
 GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
 GRUB_DEFAULT=saved
 GRUB_DISABLE_SUBMENU=true
 GRUB_TERMINAL_OUTPUT="console"
 GRUB_CMDLINE_LINUX="rhgb quiet"
-GRUB_DISABLE_RECOVERY="true"
+# GRUB_DISABLE_RECOVERY="true"
 GRUB_ENABLE_BLSCFG=true'''
     print("Removing Grub Timeout")
     subprocess.run([
