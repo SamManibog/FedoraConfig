@@ -13,7 +13,7 @@ signal.signal(signal.SIGTERM, gracefulExit)
 signal.signal(signal.SIGINT, gracefulExit)
 
 try:
-    cmd = "sudo dnf update --refresh ; flatpak update"
+    cmd = "sudo dnf -y update --refresh ; flatpak update -y"
     print(cmd)
     subprocess.run(cmd, shell=True)
 finally:
