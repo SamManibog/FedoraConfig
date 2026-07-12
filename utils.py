@@ -164,3 +164,17 @@ def cpImproved(
         after(dstPath, didWrite)
     else:
         eprint(f"Copy source path '{str(srcPath)}' not found.")
+
+# returns an object with the subdirectories of the module in the given folder
+def getModuleSubdirectories(module_path):
+    module_path = Path(module_path)
+    return {
+        "staticUserFiles": module_path / "./user/static",
+        "templateUserFiles": module_path / "./user/template",
+        "afterUserFiles": module_path / "./user/after",
+
+        "staticSystemFiles": module_path / "./system/static",
+        "templateSystemFiles": module_path / "./system/template",
+        "afterSystemFiles": module_path / "./system/after",
+    }
+

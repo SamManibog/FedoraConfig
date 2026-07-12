@@ -15,6 +15,7 @@
 # if a dictionary, it may
 #   1) contain a key "copr" to define the copr host of the package
 #   2) contain a key "after" which may be a bash command provided as a string or a callable
+#   2) contain a key "before" which may be a bash command provided as a string or a callable
 pkgs = [
     "git-core",
     "blueman",
@@ -118,23 +119,6 @@ flatpaks = [
 fontUrls = [
     "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/CommitMono.zip",
 ]
-
-from pathlib import Path
-
-# the relative location to look for config files to copy into the home directory
-# these files will ask permission before overwriting
-staticUserFilesPath = Path(__file__).parent / "./userFiles/static"
-
-# the relative location to look for config files to copy into the home directory
-# these files will be skipped if already present in the home directory
-templateUserFilesPath = Path(__file__).parent / "./userFiles/template"
-
-# the relative location to look for after-write functions
-afterUserFilesPath = Path(__file__).parent / "./userFiles/after"
-
-staticSystemFilesPath = Path(__file__).parent / "./systemFiles/static"
-templateSystemFilesPath = Path(__file__).parent / "./systemFiles/template"
-afterSystemFilesPath = Path(__file__).parent / "./systemFiles/after"
 
 # the function to run after all config functions are run
 import subprocess

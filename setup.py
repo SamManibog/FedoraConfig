@@ -11,14 +11,106 @@
 # defines code related to setting up home directory
 
 import os
+import sys
 from pathlib import Path
 import tempfile
 import subprocess
 import re
 import importlib.util
+import configparser
 
 import options
 import utils
+
+MODULE_CONFIG_PATH = Path(Path.home() / ".config/FedoraConfigModules.ini")
+
+# gets an array containing the names of each module defined in this repo
+def definedModules():
+    folder_path = Path(__file__).parent / "modules"
+    if not Path(folder_path).exists():
+        return []
+    return [entry.name for entry in os.scandir(folder_path) if entry.is_dir()]
+
+# prompts the user for which modules they want to enable
+# returns a list containing the names of each newly enabled module
+def promptEnableModules(defined_modules):
+    if len(defined_modules) <= 0:
+        return []
+
+    print("It looks like this is your first time setting up this system.")
+
+    if not utils.askYesNo("Would you like to enable any modules before setup?"):
+        print("Proceeding with setup.")
+        return []
+
+    enabled = []
+    for module in defined_modules:
+        if utils.askYesNo(f"Would you like to enable module '{module}'?"):
+            enabled.append(module)
+        
+    print("Proceeding with setup.")
+
+    return enabled
+
+# returns the enabled modules from the passed .ini file path
+# this may modify the passed file if...
+#   1) there are modules enabled in the file that are not defined in this repo (removes them)
+#   2) there are modules in this repo that are not explicitly disabled in the file (adds them as disabled)
+def listEnabledModules(config_path):
+    defined = definedModules()
+    enabled = []
+
+    default_settings = {}
+    for module in defined:
+        default_settings[module] = "no";
+
+    # the initial configuration
+    config = configparser.ConfigParser(defaults=default_settings, allow_unnamed_section=True)
+    if Path(config_path).exists():
+        config.read(config_path)
+    else:
+        config[configparser.UNNAMED_SECTION] = {}
+        for module in promptEnableModules(defined):
+            config.set(configparser.UNNAMED_SECTION, module, str(True))
+
+    # put put config file into new config file (to remove unrecognized options)
+    new_config = configparser.ConfigParser(allow_unnamed_section=True)
+    new_config[configparser.UNNAMED_SECTION] = {}
+    for module in defined:
+        is_enabled = config.getboolean(configparser.UNNAMED_SECTION, module, fallback=False)
+        new_config.set(configparser.UNNAMED_SECTION, module, str(is_enabled))
+        if is_enabled:
+            enabled.append(module)
+
+    # write the new file
+    subprocess.run(["touch", config_path])
+    with open(str(config_path), 'w') as configfile:
+        new_config.write(configfile)
+
+    return enabled
+
+# gets the path to all folders of enabled modules, the top level directory folder is prepended automatically
+def getEnabledModulePaths(config_path):
+    enabled_names = listEnabledModules(config_path)
+    enabled = list(map(lambda name: Path(__file__).parent / "modules" / name, enabled_names))
+    enabled.insert(0, Path(__file__).parent)
+    return enabled
+
+# imports all enabled modules, returning them in an array, which should be loaded in the given order
+def importEnabledModules(config_path):
+    imports = []
+
+    module_paths = getEnabledModulePaths(config_path)
+    for modulePath in module_paths:
+        if not (modulePath / "options.py").is_file():
+            raise FileNotFoundError(f"module '{modulePath.name}' is missing an options.py file")
+
+        spec = importlib.util.spec_from_file_location("after", modulePath / "options.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        imports.append(module)
+
+    return imports
 
 # checks if a copr is enabled by name
 def coprIsEnabled(copr):
@@ -74,6 +166,14 @@ def installSpecialPackage(pkgConfig):
         utils.eprint("ERROR: Invalid package config received (no valid package list found)")
         return
 
+    # check that before is valid, if it exists
+    before = None
+    if "before" in pkgConfig:
+        before = pkgConfig["before"]
+        if not callable(before) and not utils.isString(before):
+            utils.eprint("ERROR: Invalid package config received (value provided as before is not callable nor a string)")
+            return
+
     # check that after is valid, if it exists
     after = None
     if "after" in pkgConfig:
@@ -96,6 +196,12 @@ def installSpecialPackage(pkgConfig):
             coprCmd = f"sudo dnf copr enable {copr}"
             print(coprCmd)
             subprocess.run(coprCmd, shell=True)
+
+    if before:
+        if callable(before):
+            before()
+        else:
+            subprocess.run(before, shell=True)
 
     # install packages
     installPackages(pkgList)
@@ -164,7 +270,7 @@ def enableFlatpakRemotes(remotes):
         print(cmd)
         subprocess.run(cmd, shell=True)
 
-# sets up rpm fusion
+# sets up rpm fusion nonfree
 def setupRpmFusion():
     rpmPkgs = [
         "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm",
@@ -174,28 +280,63 @@ def setupRpmFusion():
     installPackages(rpmPkgs)
     print("RPM Fusion Installed...")
 
-# runs the setup steps for downloading packages
-def setupPackages():
-    print("Installing packages...")
-    # the list of "normal" packages
-    basePkgs = list(filter(utils.isString, options.pkgs))
+# runs the setup steps for downloading a module's packages
+def setupModulePackages(module):
+    if not hasattr(module, "pkgs"):
+        return
 
-    # ensure git is installed, CRUCIAL step
+    # the list of "normal" packages
+    basePkgs = list(filter(utils.isString, module.pkgs))
+
+    # ensure git is installed, needed so config can be saved easily
     basePkgs.append("git")
 
     # install normal packages
     installPackages(basePkgs)
 
     # the list of "special" packages with extra instructions
-    specialPkgs = list(filter(utils.isDict, options.pkgs))
+    specialPkgs = list(filter(utils.isDict,module.pkgs))
 
     # install special packages
     for pkgConfig in specialPkgs:
         installSpecialPackage(pkgConfig)
+
+# runs the package setup steps for all provided modules
+def setupPackages(module_list):
+    print("Installing packages...")
+
+    for module in module_list:
+        setupModulePackages(module)
+
     print("Package installation complete.")
 
+# enables the flatpak remotes for the provided module
+def setupModuleFlatpakRemotes(module):
+    if not hasattr(module, "flatpakRemotes"):
+        return
+
+    enableFlatpakRemotes(module.flatpakRemotes)
+
+# installs the flatpaks for the given modules
+def setupModuleFlatpaks(module):
+    if not hasattr(module, "flatpaks"):
+        return
+
+    # the list of "normal" flatpaks
+    basePaks = list(filter(utils.isString, module.flatpaks))
+
+    # install "normal" flatpaks
+    installFlatpaks(basePaks)
+
+    # the list of "special" flatpaks with extra instructions
+    specialPaks = list(filter(utils.isDict, module.flatpaks))
+
+    # install special packages
+    for pakConfig in specialPaks:
+        installSpecialFlatpaks(pakConfig)
+
 # runs the steps for installing flatpaks
-def setupFlatpaks():
+def setupFlatpaks(module_list):
     # ensure flatpak is installed
     print("Installing flatpak...")
     installPackages("flatpak")
@@ -209,23 +350,13 @@ def setupFlatpaks():
             "url": "https://flathub.org/repo/flathub.flatpakrepo",
         }
     ])
-    enableFlatpakRemotes(options.flatpakRemotes)
+    for module in module_list:
+        setupModuleFlatpakRemotes(module)
     print("Flatpak remotes enabled")
 
     print("Installing flatpaks...")
-
-    # the list of "normal" flatpaks
-    basePaks = list(filter(utils.isString, options.flatpaks))
-
-    # install "normal" flatpaks
-    installFlatpaks(basePaks)
-
-    # the list of "special" flatpaks with extra instructions
-    specialPaks = list(filter(utils.isDict, options.flatpaks))
-
-    # install special packages
-    for pakConfig in specialPaks:
-        installSpecialFlatpaks(pakConfig)
+    for module in module_list:
+        setupModuleFlatpaks(module)
     print("Flatpaks installed.")
 
 # the callback function used to run file after-copy functions
@@ -244,44 +375,62 @@ def fileAfterRunner(dstPath, written, afterFilesPath, actualPath):
         if afterModule.always() or written:
             afterModule.callback(Path(dstPath))
 
-def systemFileAfterRunner(dstPath, written):
-    fileAfterRunner(dstPath, written, options.afterSystemFilesPath, Path("/"))
+# runs the setup steps for updating system files for a module
+def setupModuleSystemDirectories(module):
+    module_subdirs = utils.getModuleSubdirectories(Path(module.__file__).parent)
 
-def homeFileAfterRunner(dstPath, written):
-    fileAfterRunner(dstPath, written, options.afterUserFilesPath, Path.home())
+    def fileAfterFunc(dstPath, written):
+        fileAfterRunner(dstPath, written, module_subdirs["afterSystemFiles"], Path("/"))
+
+    utils.cpImproved(
+        module_subdirs["staticSystemFiles"],
+        Path("/"),
+        sudo=True,
+        after=fileAfterFunc
+    )
+    utils.cpImproved(
+        module_subdirs["templateSystemFiles"],
+        Path("/"),
+        allowOverwrite=False,
+        sudo=True,
+        after=fileAfterFunc
+    )
 
 # runs the setup steps for updating system files
-def setupSystemDirectories():
+def setupSystemDirectories(module_list):
     print("Setting up system files...")
-    utils.cpImproved(
-        options.staticSystemFilesPath,
-        Path("/"),
-        sudo=True,
-        after=systemFileAfterRunner
-    )
-    utils.cpImproved(
-        options.templateSystemFilesPath,
-        Path("/"),
-        allowOverwrite=False,
-        sudo=True,
-        after=systemFileAfterRunner
-    )
+
+    for module in module_list:
+        setupModuleSystemDirectories(module)
+
     print("System file setup complete")
 
-# runs the setup steps for updating the home directory
-def setupHomeDirectory():
-    print("Setting up home files...")
+# runs the setup steps for updating the home directory for a module
+def setupModuleHomeDirectories(module):
+    module_subdirs = utils.getModuleSubdirectories(Path(module.__file__).parent)
+
+    def fileAfterFunc(dstPath, written):
+        fileAfterRunner(dstPath, written, module_subdirs["afterUserFiles"], Path("/"))
+
     utils.cpImproved(
-        options.staticUserFilesPath,
+        module_subdirs["staticUserFiles"],
         Path.home(),
-        after=homeFileAfterRunner
+        after=fileAfterFunc
     )
     utils.cpImproved(
-        options.templateUserFilesPath,
+        module_subdirs["templateUserFiles"],
         Path.home(),
         allowOverwrite=False,
-        after=homeFileAfterRunner
+        after=fileAfterFunc
     )
+
+# runs the setup steps for updating the home directory
+def setupHomeDirectories(module_list):
+    print("Setting up home files...")
+
+    for module in module_list:
+        setupModuleHomeDirectories(module)
+
     print("Home file setup complete")
 
 # installs a single font to the machine, given as a path
@@ -305,11 +454,14 @@ def installFontByPath(path):
         utils.eprint(f"ERROR: Unable to handle font with extension '{extension}'")
 
 # runs the setup steps for downloading and installing fonts
-def installFonts():
+def installModuleFonts(module):
+    if not hasattr(module, "fontUrls"):
+        return
+
     fontDir = str(Path.home() / ".local/share/fonts")
     subprocess.run(f"mkdir -p {fontDir}", shell=True)
 
-    for url in options.fontUrls:
+    for url in module.fontUrls:
         if not utils.isString(url):
             utils.eprint("ERROR: Got invalid font data (nonString url)")
             break;
@@ -325,56 +477,69 @@ def installFonts():
             else:
                 utils.eprint(f"ERROR: Unable to zipfile download from {url}")
                 break;
-
-    subprocess.run("fc-cache -f -v", shell=True)
             
 # sets up all fonts
-def setupFonts():
+def setupFonts(module_list):
     print("Setting up fonts...")
-    installFonts()
+
+    for module in module_list:
+        installModuleFonts(module)
+
+    subprocess.run("fc-cache -f -v", shell=True)
+
     print("Font setup complete")
 
 # runs the after function in options.after()
-def setupAfter():
-    print("Running options.after()...")
+def runModulePostSetup(module):
     afterFunc = getattr(options, "after", None)
     if callable(afterFunc):
         afterFunc()
+
+# runs all post setup steps in every module
+def runPostSetup(module_list):
+    print("Running options.after()...")
+
+    for module in module_list:
+        runModulePostSetup(module)
+
     print("options.after() complete")
 
+
 # runs all setup steps
-def setupAll():
+def setupAll(module_list):
     setupRpmFusion()
-    setupPackages()
-    setupFlatpaks()
-    setupFonts()
-    setupSystemDirectories()
-    setupHomeDirectory()
-    setupAfter()
+    setupPackages(module_list)
+    setupFlatpaks(module_list)
+    setupFonts(module_list)
+    setupSystemDirectories(module_list)
+    setupHomeDirectories(module_list)
+    runPostSetup(module_list)
 
 def main():
+    module_list = importEnabledModules(MODULE_CONFIG_PATH)
+
     prompt = ("Press a key to select a setup option:\n"
-        "a - set up all\n"
-        "h - set up home directory only\n"
+        "a - set up all (excluding disabled modules)\n"
+        "h - set up home directories only\n"
         "s - set up system directories only\n"
         "f - set up fonts only\n"
         "k - set up flatpaks only\n"
         "p - set up packages only\n"
         "r - set up rpm fusion\n"
-        "z - run options.after() only\n"
+        "z - run post setup only\n"
         "q - quit\n")
 
     cancelWarning = "Setup Cancelled."
 
     actionMap = {
-        "a": setupAll,
-        "s": setupSystemDirectories,
-        "h": setupHomeDirectory,
-        "f": setupFonts,
-        "k": setupFlatpaks,
-        "p": setupPackages,
+        "a": lambda: setupAll(module_list),
+        "s": lambda: setupSystemDirectories(module_list),
+        "h": lambda: setupHomeDirectories(module_list),
+        "f": lambda: setupFonts(module_list),
+        "k": lambda: setupFlatpaks(module_list),
+        "p": lambda: setupPackages(module_list),
         "r": setupRpmFusion,
-        "z": setupAfter,
+        "z": lambda: runPostSetup(module_list),
     }
 
     try:
