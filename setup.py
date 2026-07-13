@@ -83,6 +83,12 @@ def installPackages(pkgList):
 
 # install a special package
 def installSpecialPackage(pkgConfig):
+    if "disabled" in pkgConfig and pkgConfig["disabled"]:
+        return
+
+    if "enabled" in pkgConfig and not pkgConfig["enabled"]:
+        return
+
     # ensure that we have a valid package list
     pkgList = []
     if "pkgs" in pkgConfig:
@@ -443,7 +449,7 @@ def setupAll(module_list):
     setupHomeDirectories(module_list)
     runPostSetup(module_list)
 
-def main():
+def runSetup(show_prompt=True):
     module_list = importEnabledModules()
 
     prompt = ("Press a key to select a setup option:\n"
@@ -456,6 +462,8 @@ def main():
         "r - set up rpm fusion\n"
         "z - run post setup only\n"
         "q - quit\n")
+    if not show_prompt:
+        prompt = ""
 
     cancelWarning = "Setup Cancelled."
 
@@ -483,6 +491,46 @@ def main():
             print(cancelWarning)
     except KeyboardInterrupt:
         print(cancelWarning)
+
+def main():
+    help_message = '''Usage: python setup.py [FLAGS...]
+valid FLAGS are:
+\t--help - print this message
+\t--ensure-config - ensure that the config file is defined
+\t--redefine-config - modify which modules are enabled via a CLI
+\t--no-prompt - hide the prompt to select a setup option
+'''
+
+    # validate passed flag arguments
+    valid_flags = {
+        "--help",
+        "--ensure-config",
+        "--redefine-config",
+        "--no-prompt",
+    }
+    flag_list = sys.argv[1:]
+    for arg in flag_list:
+        if arg not in valid_flags:
+            print(help_message)
+            return
+
+    # determine which flags are used
+    flag_set = set(flag_list)
+
+    if "--help" in flag_set:
+        print(help_message)
+        return
+
+    if "--redefine-config" in flag_set:
+        utils.listEnabledModules(redefine=True)
+        return
+
+    if "--ensure-config" in flag_set:
+        utils.listEnabledModules()
+        return
+
+    # run setup if not blocked by a flag
+    runSetup(show_prompt = "--no-prompt" not in flag_set)
 
 if __name__ == "__main__":
     main()

@@ -197,7 +197,6 @@ def promptEnableModules(defined_modules):
     print("It looks like this is your first time setting up this system.")
 
     if not askYesNo("Would you like to enable any modules before setup?"):
-        print("Proceeding with setup.")
         return []
 
     enabled = []
@@ -205,15 +204,13 @@ def promptEnableModules(defined_modules):
         if askYesNo(f"Would you like to enable module '{module}'?"):
             enabled.append(module)
         
-    print("Proceeding with setup.")
-
     return enabled
 
 # returns the enabled modules from the passed .ini file path
 # this may modify the passed file if...
 #   1) there are modules enabled in the file that are not defined in this repo (removes them)
 #   2) there are modules in this repo that are not explicitly disabled in the file (adds them as disabled)
-def listEnabledModules():
+def listEnabledModules(redefine=False):
     defined = definedModules()
     enabled = []
 
@@ -223,7 +220,7 @@ def listEnabledModules():
 
     # the initial configuration
     config = configparser.ConfigParser(defaults=default_settings, allow_unnamed_section=True)
-    if Path(MODULE_CONFIG_PATH).exists():
+    if Path(MODULE_CONFIG_PATH).exists() and not redefine:
         config.read(MODULE_CONFIG_PATH)
     else:
         config[configparser.UNNAMED_SECTION] = {}

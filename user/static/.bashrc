@@ -35,7 +35,7 @@ function y() {
 
 # make setup.py global
 function home-setup() {
-     python ~/FedoraConfig/setup.py
+     python ~/FedoraConfig/setup.py "$@"
 }
 
 # make saver.py global

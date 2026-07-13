@@ -124,7 +124,7 @@ def getTargetModulePath():
     module_list = utils.listEnabledModules()
     module_paths = utils.getModulePaths(module_list)
 
-    module_list.insert(0, "[ROOT]")
+    module_list.insert(0, "[MAIN]")
 
     return module_paths[askTargetModule(module_list)]
 
