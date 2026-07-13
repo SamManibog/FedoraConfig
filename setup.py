@@ -17,98 +17,26 @@ import tempfile
 import subprocess
 import re
 import importlib.util
-import configparser
+import types
 
-import options
 import utils
 
-MODULE_CONFIG_PATH = Path(Path.home() / ".config/FedoraConfigModules.ini")
-
-# gets an array containing the names of each module defined in this repo
-def definedModules():
-    folder_path = Path(__file__).parent / "modules"
-    if not Path(folder_path).exists():
-        return []
-    return [entry.name for entry in os.scandir(folder_path) if entry.is_dir()]
-
-# prompts the user for which modules they want to enable
-# returns a list containing the names of each newly enabled module
-def promptEnableModules(defined_modules):
-    if len(defined_modules) <= 0:
-        return []
-
-    print("It looks like this is your first time setting up this system.")
-
-    if not utils.askYesNo("Would you like to enable any modules before setup?"):
-        print("Proceeding with setup.")
-        return []
-
-    enabled = []
-    for module in defined_modules:
-        if utils.askYesNo(f"Would you like to enable module '{module}'?"):
-            enabled.append(module)
-        
-    print("Proceeding with setup.")
-
-    return enabled
-
-# returns the enabled modules from the passed .ini file path
-# this may modify the passed file if...
-#   1) there are modules enabled in the file that are not defined in this repo (removes them)
-#   2) there are modules in this repo that are not explicitly disabled in the file (adds them as disabled)
-def listEnabledModules(config_path):
-    defined = definedModules()
-    enabled = []
-
-    default_settings = {}
-    for module in defined:
-        default_settings[module] = "no";
-
-    # the initial configuration
-    config = configparser.ConfigParser(defaults=default_settings, allow_unnamed_section=True)
-    if Path(config_path).exists():
-        config.read(config_path)
-    else:
-        config[configparser.UNNAMED_SECTION] = {}
-        for module in promptEnableModules(defined):
-            config.set(configparser.UNNAMED_SECTION, module, str(True))
-
-    # put put config file into new config file (to remove unrecognized options)
-    new_config = configparser.ConfigParser(allow_unnamed_section=True)
-    new_config[configparser.UNNAMED_SECTION] = {}
-    for module in defined:
-        is_enabled = config.getboolean(configparser.UNNAMED_SECTION, module, fallback=False)
-        new_config.set(configparser.UNNAMED_SECTION, module, str(is_enabled))
-        if is_enabled:
-            enabled.append(module)
-
-    # write the new file
-    subprocess.run(["touch", config_path])
-    with open(str(config_path), 'w') as configfile:
-        new_config.write(configfile)
-
-    return enabled
-
-# gets the path to all folders of enabled modules, the top level directory folder is prepended automatically
-def getEnabledModulePaths(config_path):
-    enabled_names = listEnabledModules(config_path)
-    enabled = list(map(lambda name: Path(__file__).parent / "modules" / name, enabled_names))
-    enabled.insert(0, Path(__file__).parent)
-    return enabled
-
 # imports all enabled modules, returning them in an array, which should be loaded in the given order
-def importEnabledModules(config_path):
+def importEnabledModules():
+    print(f"Reading enabled modules from '{str(utils.MODULE_CONFIG_PATH)}'...")
+
     imports = []
 
-    module_paths = getEnabledModulePaths(config_path)
+    module_paths = utils.getModulePaths(utils.listEnabledModules())
     for modulePath in module_paths:
         if not (modulePath / "options.py").is_file():
-            raise FileNotFoundError(f"module '{modulePath.name}' is missing an options.py file")
-
-        spec = importlib.util.spec_from_file_location("after", modulePath / "options.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        imports.append(module)
+            # create empty module if necessary (files may still be defined if options aren't)
+            imports.append({})
+        else:
+            spec = importlib.util.spec_from_file_location("after", modulePath / "options.py")
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            imports.append(module)
 
     return imports
 
@@ -489,7 +417,7 @@ def setupFonts(module_list):
 
     print("Font setup complete")
 
-# runs the after function in options.after()
+# runs the after function in module.after()
 def runModulePostSetup(module):
     afterFunc = getattr(options, "after", None)
     if callable(afterFunc):
@@ -497,12 +425,12 @@ def runModulePostSetup(module):
 
 # runs all post setup steps in every module
 def runPostSetup(module_list):
-    print("Running options.after()...")
+    print("Running post setup steps...")
 
     for module in module_list:
         runModulePostSetup(module)
 
-    print("options.after() complete")
+    print("Post setup steps complete.")
 
 
 # runs all setup steps
@@ -516,7 +444,7 @@ def setupAll(module_list):
     runPostSetup(module_list)
 
 def main():
-    module_list = importEnabledModules(MODULE_CONFIG_PATH)
+    module_list = importEnabledModules()
 
     prompt = ("Press a key to select a setup option:\n"
         "a - set up all (excluding disabled modules)\n"

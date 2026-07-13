@@ -6,6 +6,9 @@ import subprocess
 from pathlib import Path
 import filecmp
 import difflib
+import configparser
+
+MODULE_CONFIG_PATH = Path(Path.home() / ".config/FedoraConfigModules.ini")
 
 # check if an object is a string
 def isString(obj):
@@ -177,4 +180,75 @@ def getModuleSubdirectories(module_path):
         "templateSystemFiles": module_path / "./system/template",
         "afterSystemFiles": module_path / "./system/after",
     }
+
+# gets an array containing the names of each module defined in this repo
+def definedModules():
+    folder_path = Path(__file__).parent / "modules"
+    if not Path(folder_path).exists():
+        return []
+    return [entry.name for entry in os.scandir(folder_path) if entry.is_dir()]
+
+# prompts the user for which modules they want to enable
+# returns a list containing the names of each newly enabled module
+def promptEnableModules(defined_modules):
+    if len(defined_modules) <= 0:
+        return []
+
+    print("It looks like this is your first time setting up this system.")
+
+    if not askYesNo("Would you like to enable any modules before setup?"):
+        print("Proceeding with setup.")
+        return []
+
+    enabled = []
+    for module in defined_modules:
+        if askYesNo(f"Would you like to enable module '{module}'?"):
+            enabled.append(module)
+        
+    print("Proceeding with setup.")
+
+    return enabled
+
+# returns the enabled modules from the passed .ini file path
+# this may modify the passed file if...
+#   1) there are modules enabled in the file that are not defined in this repo (removes them)
+#   2) there are modules in this repo that are not explicitly disabled in the file (adds them as disabled)
+def listEnabledModules():
+    defined = definedModules()
+    enabled = []
+
+    default_settings = {}
+    for module in defined:
+        default_settings[module] = "no";
+
+    # the initial configuration
+    config = configparser.ConfigParser(defaults=default_settings, allow_unnamed_section=True)
+    if Path(MODULE_CONFIG_PATH).exists():
+        config.read(MODULE_CONFIG_PATH)
+    else:
+        config[configparser.UNNAMED_SECTION] = {}
+        for module in promptEnableModules(defined):
+            config.set(configparser.UNNAMED_SECTION, module, str(True))
+
+    # put put config file into new config file (to remove unrecognized options)
+    new_config = configparser.ConfigParser(allow_unnamed_section=True)
+    new_config[configparser.UNNAMED_SECTION] = {}
+    for module in defined:
+        is_enabled = config.getboolean(configparser.UNNAMED_SECTION, module, fallback=False)
+        new_config.set(configparser.UNNAMED_SECTION, module, str(is_enabled))
+        if is_enabled:
+            enabled.append(module)
+
+    # write the new file
+    subprocess.run(["touch", MODULE_CONFIG_PATH])
+    with open(str(MODULE_CONFIG_PATH), 'w') as configfile:
+        new_config.write(configfile)
+
+    return enabled
+
+# gets the path to all folders of enabled modules, the top level directory folder is prepended automatically
+def getModulePaths(module_list):
+    paths = list(map(lambda name: Path(__file__).parent / "modules" / name, module_list))
+    paths.insert(0, Path(__file__).parent)
+    return paths
 

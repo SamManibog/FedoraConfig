@@ -4,7 +4,6 @@ import subprocess
 from pathlib import Path
 import sys
 
-import options
 import utils
 
 helpText = ("Usage: saver.py [FLAGS] [PATHS...]\n"
@@ -96,6 +95,39 @@ def getEntryList(sort):
 
     return entries
 
+def askTargetModule(module_list):
+    print("Modules:")
+    for idx in range(0, len(module_list)):
+        module = module_list[idx]
+        print(f"{str(idx).rjust(3)} - {module}")
+
+    prompt = "Enter the index of the module you would like to edit.\n"
+    while True:
+        inputStr = input(prompt)
+        if not inputStr:
+            print("Received empty selection. Retry.")
+            continue;
+
+        inputNum = -1
+        try:
+            inputNum = int(inputStr)
+        except ValueError:
+            pass
+
+        if inputNum < 0 or inputNum >= len(module_list):
+            print(f"Received invalid selection '{inputStr}'. Retry.")
+            continue;
+
+        return inputNum
+
+def getTargetModulePath():
+    module_list = utils.listEnabledModules()
+    module_paths = utils.getModulePaths(module_list)
+
+    module_list.insert(0, "[ROOT]")
+
+    return module_paths[askTargetModule(module_list)]
+
 # ask the user for selected entries
 def askSelectedEntries(entries):
     print("Entries:")
@@ -143,19 +175,6 @@ def cwd_is_in_home():
         return False
 
 def main(args):
-    pathMap = {
-        "home": {
-            "static": options.staticUserFilesPath,
-            "template": options.templateUserFilesPath,
-            "actual": Path.home(),
-        },
-        "system": {
-            "static": options.staticSystemFilesPath,
-            "template": options.templateSystemFilesPath,
-            "actual": Path("/"),
-        }
-    }
-
     try:
         argObject = {}
 
@@ -165,10 +184,27 @@ def main(args):
             print(str(e))
             print(helpText)
 
-        # populate missing arguments
+        # determine which files are being copied
         if not argObject["paths"]:
             argObject["paths"] = noPathsCli(argObject["sort"], maxListed)
 
+        # determine which module is being modified
+        module_path = getTargetModulePath()
+        module_path_data = utils.getModuleSubdirectories(module_path)
+        pathMap = {
+            "home": {
+                "static": module_path_data["staticUserFiles"],
+                "template": module_path_data["templateUserFiles"],
+                "actual": Path.home(),
+            },
+            "system": {
+                "static": module_path_data["staticSystemFiles"],
+                "template": module_path_data["templateSystemFiles"],
+                "actual": Path("/"),
+            }
+        }
+
+        # determine which module directory is being modified
         if not "saveDst" in argObject:
             argObject["saveDst"] = askDstType()
 
