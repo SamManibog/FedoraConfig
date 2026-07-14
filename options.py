@@ -11,11 +11,11 @@
 
 # the list of packages to be installed
 # can be provided as a string or a dictionary
-# if a dictionary, it must contain a key "pkg" or "pkgs" that is either a string or list of string packages
-# if a dictionary, it may
-#   1) contain a key "copr" to define the copr host of the package
-#   2) contain a key "after" which may be a bash command provided as a string or a callable
-#   2) contain a key "before" which may be a bash command provided as a string or a callable
+# if a dictionary, it must contain a key "pkg" that is a string package name
+# if a dictionary, it may also contain the following keys
+#   1) "copr" to define the copr host of the package as a string
+#   2) "after" which may be a bash command string
+#   2) "before" which may be a bash command string
 pkgs = [
     "git-core",
     "blueman",
@@ -27,6 +27,46 @@ pkgs = [
     "tmux",
     "gnome-font-viewer",
     "steam",
+
+    # desktop environment
+    "niri",
+    "wob",
+    "xfce-polkit",
+    "waybar",
+    "wpctl",
+    "brightnessctl",
+    "gammastep",
+    "fuzzel",
+    "swayidle",
+    "swaylock",
+    "swaybg",
+    "jq",
+    "xdg-desktop-portal-gtk",
+    "xdg-desktop-portal-gnome",
+    "gnome-keyring",
+    "nm-applet",
+
+    # creative software
+    "obs-studio",
+    "audacity",
+    "blender",
+    "gimp",
+    "inkscape",
+    "openshot",
+
+    # office tools
+    "libreoffice-writer",
+    "libreoffice-calc",
+    "libreoffice-impress",
+    "libreoffice-draw",
+    "libreoffice-base",
+    "libreoffice-math",
+
+    # mobile device tools
+    "libimobiledevice",
+    "ifuse",
+    "usbmuxd",
+
     {
         "pkg": "kitty",
         "after": "gsettings set org.gnome.desktop.default-applications.terminal exec kitty",
@@ -36,59 +76,12 @@ pkgs = [
         "after": "sudo dnf swap ffmpeg-free ffmpeg --allowerasing",
     },
     {
-        "pkg": [
-            "obs-studio",
-            "audacity",
-            "blender",
-            "gimp",
-            "inkscape",
-            "openshot",
-        ],
-    },
-    {
-        "pkg": [
-            "libreoffice-writer",
-            "libreoffice-calc",
-            "libreoffice-impress",
-            "libreoffice-draw",
-            "libreoffice-base",
-            "libreoffice-math",
-        ],
-    },
-    {
-        "pkg": [
-            "libimobiledevice",
-            "ifuse",
-            "usbmuxd",
-        ],
-    },
-    {
         "pkg": "neovim",
         "after": "git clone git@github.com:SamManibog/nvim.git ~/.config/nvim",
     },
     {
         "pkg": "SwayNotificationCenter",
         "copr": "erikreider/SwayNotificationCenter",
-    },
-    {
-        "pkg": [
-            "niri",
-            "wob",
-            "xfce-polkit",
-            "waybar",
-            "wpctl",
-            "brightnessctl",
-            "gammastep",
-            "fuzzel",
-            "swayidle",
-            "swaylock",
-            "swaybg",
-            "jq",
-            "xdg-desktop-portal-gtk",
-            "xdg-desktop-portal-gnome",
-            "gnome-keyring",
-            "nm-applet",
-        ],
     },
     {
         "pkg": "yazi",

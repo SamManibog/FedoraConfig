@@ -8,7 +8,8 @@ import filecmp
 import difflib
 import configparser
 
-MODULE_CONFIG_PATH = Path(Path.home() / ".config/FedoraConfigModules.ini")
+CONFIG_PATH = Path.home() / ".config/FedoraConfig"
+MODULE_CONFIG_PATH = Path.home() / ".config/FedoraConfig/modules.ini"
 
 # check if an object is a string
 def isString(obj):
@@ -223,6 +224,7 @@ def listEnabledModules(redefine=False):
     if Path(MODULE_CONFIG_PATH).exists() and not redefine:
         config.read(MODULE_CONFIG_PATH)
     else:
+        subprocess.run(["mkdir", "-p", CONFIG_PATH])
         config[configparser.UNNAMED_SECTION] = {}
         for module in promptEnableModules(defined):
             config.set(configparser.UNNAMED_SECTION, module, str(True))
