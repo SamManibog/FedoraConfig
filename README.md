@@ -53,11 +53,11 @@ Packages may be defined in the self_packages.py python module. This module conta
 attribute called packages, which serves as a map from each package's name to it's definition.
 
 Package definitions must have two fields:
- - scheme - a string that matches one of the names in the schemes defined [here](#schemes)
+ - scheme - a `str` that matches one of the names in the schemes defined [here](#schemes)
  - scheme_config - a value that corresponds with the selected scheme
 
 Package definitions may also have several other fields:
- - dependencies - a list of dependencies of the package (either a dnf package or another self-defined package), passed as strings
+ - dependencies - a list of dependencies of the package (either a dnf package or another self-defined package), passed as `str`
  - build - a bash script to run from the directory downloaded by the package scheme
  - exes - a list that tells the package manager what executables are defined by the package and how to execute them, valid executable types are defined [here](#executables)
 
@@ -72,7 +72,7 @@ The 'git' scheme is used to download a git repository from a url via cloning.
 Its best usecases are for basic git repositries that you would like to be on the bleeding edge
 or github repositories with a weak release cycle.
 
-The associated scheme_config is just the string url of the repository that you would like to clone.
+The associated scheme_config is just the `str` url of the repository that you would like to clone.
 
 #### github
 
@@ -143,7 +143,7 @@ The `verifyConfig()` function is used to ensure that a package's scheme_config f
 
 It takes one argument, which is the scheme_config of an arbitrary package using this scheme.
 
-It should return a boolean; `True` if the config is valid or `False` if not.
+It should return either a `str` error message or `None` if the config is valid.
 
 #### download()
 
