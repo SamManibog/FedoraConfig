@@ -14,7 +14,7 @@ packages = {
             "repo": "theHarvester",
         },
         "build": "uv sync",
-        "runables": [
+        "exes": [
             Script("theHarvester", ".", 'uv run --project {file} theHarvester "$@"'),
             Script("restfulHarvest", ".", 'uv run --project {file} restfulHarvest "$@"'),
         ],
@@ -31,7 +31,7 @@ packages = {
             "user": "sullo",
             "repo": "nikto",
         },
-        "runables": [
+        "exes": [
             Script("nikto", "program/nikto.pl", 'perl {file} "$@"'),
         ],
     },
@@ -44,7 +44,7 @@ packages = {
         "scheme": "git",
         "scheme_config": "https://github.com/lgandx/Responder",
         "build": "pip install -r requirements.txt",
-        "runables": [
+        "exes": [
             Script("Responder.py", "Responder.py", 'python {file} "$@"'),
         ],
     },
