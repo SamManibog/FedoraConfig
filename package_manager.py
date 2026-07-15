@@ -130,7 +130,7 @@ def installScript(script, package_dir):
     target = str(Path(package_dir) / script.target)
     binary = str(putils.BINARY_FOLDER / script.name)
 
-    content = script.content.format(file=target)
+    content = script.content.format(target=target)
 
     with open(binary, "w") as file:
         file.write(content)
