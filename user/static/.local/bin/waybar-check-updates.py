@@ -41,6 +41,18 @@ if lastCheckedUpdates != None:
 loadingUpdatesJson = f'{{"text": "{loadingUpdatesIcon}", {loadingTooltip}, {loadingClasses}, "percentage": 0}}'
 print(loadingUpdatesJson, flush=True)
 
+# updates from my packages
+myPkgCount = 0
+try:
+    myPkgCount = int(subprocess.run(
+        "python ~/FedoraConfig/cli.py count-updates",
+        capture_output=True,
+        text=True,
+        shell=True
+    ).stdout)
+except:
+    pass
+
 # dnf updates can have special output, but all updates have lines ending in 'updates'
 # so just count lines ending with 'updates'
 dnfCount = int(subprocess.run(
@@ -92,7 +104,10 @@ if not hasInternet:
 timestamp = datetime.now().strftime(timeFormat)
 
 # determine tooltip and classes
+total = myPkgCount + dnfCount + flatpakCount
 tooltipCategories = []
+if myPkgCount > 0:
+    tooltipCategories.append(f"{myPkgCount} MyPkg Updates")
 if dnfSecurityCount > 0:
     tooltipCategories.append(f"{dnfSecurityCount} DNF Security Updates")
 if dnfOtherCount > 0:
@@ -110,7 +125,7 @@ if len(tooltipCategories) > 0:
     if dnfSecurityCount > 0:
         widgetClass = '[ "has-updates", "has-security-updates" ]'
 if len(tooltipCategories) > 1:
-    widgetTooltip += f"\\nTotal: {dnfCount + flatpakCount}"
+    widgetTooltip += f"\\nTotal: {total}"
 
 widgetTooltip += f"\\n\\nLast Checked at {timestamp}"
 
@@ -119,4 +134,4 @@ print(outputJson, flush=True)
 
 # save state
 with open(statePath, "w", encoding="utf-8") as stateFile:
-    stateFile.write(f"{str(dnfCount + flatpakCount)}\n{timestamp}")
+    stateFile.write(f"{str(total)}\n{timestamp}")

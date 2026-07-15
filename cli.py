@@ -23,6 +23,11 @@ def installCallback(flags, args):
     force = "-f" in flags
     package_manager.installPackages(args, self_packages.packages, force=force)
 
+def updateCallback(flags):
+    force = "-f" in flags
+    lockdata = package_manager.loadLockData()
+    package_manager.installPackages(list(lockdata.sections()), self_packages.packages, force=force)
+
 def countUpdatesCallback():
     lockdata = package_manager.loadLockData()
 
@@ -88,10 +93,18 @@ commands = {
     "install": {
         "desc": "Installs the given self-packaged PACKAGES.",
         "flags": {
-            "-f": "force reinstallation",
+            "-f": "force reinstallation of the given packages",
         },
         "arguments": "PACKAGES",
         "callback": installCallback,
+    },
+
+    "update": {
+        "desc": "Updates all self-packaged packages.",
+        "flags": {
+            "-f": "force reinstallation of all packages",
+        },
+        "callback": updateCallback,
     },
 
     "count-updates": {
