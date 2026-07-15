@@ -34,13 +34,8 @@ function y() {
 }
 
 # make setup.py global
-function home-setup() {
-     python ~/FedoraConfig/setup.py "$@"
-}
-
-# make saver.py global
-function home-copy() {
-     python ~/FedoraConfig/saver.py "$@"
+function home() {
+     python ~/FedoraConfig/cli.py "$@"
 }
 
 # set neovim as default editor

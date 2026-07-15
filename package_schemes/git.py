@@ -1,5 +1,3 @@
-from urllib.parse import urlsplit
-
 import subprocess
 import tempfile
 
@@ -12,7 +10,7 @@ def verifyConfig(cfg):
 # downloads a git repository from the given url, returning DownloadPkgResult on success
 # if for some reason the repo could not be downloaded, returns None instead
 # note: this will overwrite the existing repository
-def downloadRepo(name, url):
+def download(name, url):
     output_path = putils.PACKAGE_FOLDER / name
 
     subprocess.run([
@@ -35,13 +33,12 @@ def downloadRepo(name, url):
     ).stdout.split()[0]
 
     return {
-        "url": url, 
         "commit": commit,
     }
 
 # checks if a git repo needs an update
-def needsUpdate(ini):
-    remote = ini["url"]
+def needsUpdate(ini, cfg):
+    remote = cfg
     commit_hash = ini["commit"]
 
     head_hash = subprocess.run(

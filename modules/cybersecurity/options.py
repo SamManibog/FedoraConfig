@@ -18,23 +18,18 @@
 #   3) contain a key "before" which may be a bash command provided as a string or a callable
 pkgs = [
     # network tools
-    {
-        "pkgs": [
-            "nmap",
-            "arp-scan",
-            "net-tools",
-            "netcat",
-            "impacket",
-        ],
-    },
+    "nmap",
+    "arp-scan",
+    "net-tools",
+    "netcat",
+    "impacket",
+    "theHarvester",
+    "nikto",
+    "Responder",
 
     # password cracking tools
-    {
-        "pkgs": [
-            "hashcat",
-            "hydra",
-        ],
-    },
+    "hashcat",
+    "hydra",
 ]
 
 # the list of flatpak remotes to add

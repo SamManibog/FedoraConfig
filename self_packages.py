@@ -16,6 +16,7 @@ packages = {
         "build": "uv sync",
         "runables": [
             Script("theHarvester", ".", 'uv run --project {file} theHarvester "$@"'),
+            Script("theHarvester", ".", 'uv run --project {file} restfulHarvest "$@"'),
         ],
     },
 

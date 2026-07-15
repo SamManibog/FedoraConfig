@@ -32,7 +32,7 @@ def getLatestMetadata(user, repo):
 # downloads a git repository from the given url, returning DownloadPkgResult on success
 # if for some reason the repo could not be downloaded, returns None instead
 # note: this will overwrite the existing repository
-def downloadRepo(name, cfg):
+def download(name, cfg):
     user = cfg["user"]
     repo = cfg["repo"]
 
@@ -44,16 +44,14 @@ def downloadRepo(name, cfg):
     putils.downloadZip(zip_url, outputPath)
 
     return {
-        "user": user,
-        "repo": repo,
         "version": version,
     }
 
 # checks if a git repo needs an update
-def needsUpdate(ini):
-    user = ini["user"]
-    repo = ini["repo"]
+def needsUpdate(ini, cfg):
+    user = cfg["user"]
+    repo = cfg["repo"]
     meta = getLatestMetadata(user, repo)
-
     return meta["tag_name"] != ini["version"]
+
 

@@ -24,56 +24,6 @@ dstFlags = {
     "t": "template",
 }
 
-sortFlags = {
-    "r": "recent",
-    "o": "oldest",
-    "a": "alphabetical",
-    "A": "reverse-alphabetical",
-}
-
-# parses system args
-def parseArgs(args):
-    argObject = {
-        "paths": [],
-    }
-
-    def parseGroup(flagGroup):
-        for f in flagGroup:
-            if f in dstFlags:
-                if "saveDst" in argObject:
-                    raise ValueError("You can only specify one of -s or -t")
-                else:
-                    argObject["saveDst"] = dstFlags[f]
-            elif f in dstFlags:
-                if "sort" in argObject:
-                    raise ValueError("You can only specify one of -a, -A, -o, or -r")
-                else:
-                    argObject["sort"] = sortFlags[f]
-            else:
-                raise ValueError(f"Unrecognized flag '{f}'")
-
-    last_idx = None
-    for idx in range(1, len(args)):
-        flag = args[idx]
-        if flag == "--help":
-            print(helpText)
-            sys.exit()
-
-        if flag[:1] == "-":
-            parseGroup(flag[1:])
-        else:
-            last_idx = idx
-            break;
-
-    if last_idx != None:
-        for idx in range(last_idx, len(args)):
-            argObject["paths"].append(Path.cwd() / Path(args[idx]))
-
-    if not "sort" in argObject:
-        argObject["sort"] = "recent"
-
-    return argObject
-
 # get all entries in the current directory in sorted order
 def getEntryList(sort):
     keyMap = {
@@ -83,18 +33,19 @@ def getEntryList(sort):
         "reverse-alphabetical": lambda x: x.stat(follow_symlinks=False).st_mtime,
     }
     reverseMap = {
-        "reverse-alphabetical": True,
-        "recent": True,
+        "reverse-alphabetical",
+        "recent",
     }
 
     entries = []
     for entry in Path.cwd().iterdir():
         if not entry.is_symlink():
             entries.append(entry)
-    entries.sort(key=keyMap[sort], reverse=reverseMap[sort])
+    entries.sort(key=keyMap[sort], reverse=sort in reverseMap)
 
     return entries
 
+# ask the user for the module that they want to copy to
 def askTargetModule(module_list):
     print("Modules:")
     for idx in range(0, len(module_list)):
@@ -120,6 +71,7 @@ def askTargetModule(module_list):
 
         return inputNum
 
+# ask the user for the module they want to copy to, and get its path
 def getTargetModulePath():
     module_list = utils.listEnabledModules()
     module_paths = utils.getModulePaths(module_list)
@@ -155,9 +107,9 @@ def askSelectedEntries(entries):
         else:
             print("Received empty selection. Retry.")
 
-def noPathsCli(sort, max):
+def getPathsToCopy(sort):
     entries = getEntryList(sort)
-    selectedEntries = askSelectedEntries(entries[:max])
+    selectedEntries = askSelectedEntries(entries[:maxListed])
     return selectedEntries
 
 def askDstType():
@@ -174,19 +126,10 @@ def cwd_is_in_home():
     except ValueError:
         return False
 
-def main(args):
+def save(sort):
     try:
-        argObject = {}
-
-        try:
-            argObject = parseArgs(args)
-        except ValueError as e:
-            print(str(e))
-            print(helpText)
-
         # determine which files are being copied
-        if not argObject["paths"]:
-            argObject["paths"] = noPathsCli(argObject["sort"], maxListed)
+        selected_paths = getPathsToCopy(sort)
 
         # determine which module is being modified
         module_path = getTargetModulePath()
@@ -205,8 +148,7 @@ def main(args):
         }
 
         # determine which module directory is being modified
-        if not "saveDst" in argObject:
-            argObject["saveDst"] = askDstType()
+        saveDst = askDstType()
 
         # make directories up to the parent directory
         pathData = None
@@ -215,19 +157,20 @@ def main(args):
         else:
             pathData = pathMap["system"]
 
-        logicalHome = pathData[argObject["saveDst"]]
-        srcHomeRelativeParent = argObject["paths"][0].parent.relative_to(pathData["actual"])
+        logicalHome = pathData[saveDst]
+        srcHomeRelativeParent = selected_paths[0].parent.relative_to(pathData["actual"])
         dstParent = logicalHome / srcHomeRelativeParent
 
-        subprocess.run(f"mkdir -p {str(dstParent)}", shell=True)
+        subprocess.run([
+            "mkdir",
+            "-p",
+            str(dstParent)
+        ])
 
         # recursively copy selected paths into the destination
-        for src in argObject["paths"]:
+        for src in selected_paths:
             dst = logicalHome / src.relative_to(pathData["actual"])
             utils.cpImproved(src, dst, alwaysAsk=True)
 
     except KeyboardInterrupt:
         print("Stopping: interrupt recieved.")
-
-if __name__ == "__main__":
-    main(sys.argv)

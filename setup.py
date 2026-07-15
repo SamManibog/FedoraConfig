@@ -15,11 +15,12 @@ import sys
 from pathlib import Path
 import tempfile
 import subprocess
-import re
 import importlib.util
 import types
 
 import utils
+import package_manager
+import self_packages
 
 # imports all enabled modules, returning them in an array, which should be loaded in the given order
 def importEnabledModules():
@@ -40,21 +41,6 @@ def importEnabledModules():
 
     return imports
 
-# checks if a copr is enabled by name
-def coprIsEnabled(copr):
-    coprListCmd = "dnf copr list"
-    coprList = subprocess.run(coprListCmd, capture_output=True, text=True, shell=True).stdout
-
-    coprRegexUncompiled = f"{copr}.*"
-    coprRegex = re.compile(coprRegexUncompiled)
-    match = re.search(coprRegex, coprList)
-
-    if match:
-        disabledRegex = r"\(disabled\)"
-        return not re.search(disabledRegex, match.group(0))
-    else:
-        return False
-
 # cleans a list or single package into a list of string package names
 def cleanPackageInput(pkgInput):
     if utils.isString(pkgInput):
@@ -64,133 +50,15 @@ def cleanPackageInput(pkgInput):
     else:
         return []
 
-# install a list of packages passed as a list of strings using the given command
-def installPackagesOrPaks(cmd, pkgList):
-    # the list of well-formed packages
-    goodPkgs = cleanPackageInput(pkgList)
-
-    if goodPkgs:
-        # the command used to install basePkgs
-        goodPkgsCmd = f"{cmd} {" ".join(goodPkgs)}"
-
-        # install base packages
-        print(goodPkgsCmd)
-        subprocess.run(goodPkgsCmd, shell=True)
-
-# install a list of packages, passed as a list of strings
-def installPackages(pkgList):
-    installPackagesOrPaks("sudo dnf install", pkgList)
-
-# install a special package
-def installSpecialPackage(pkgConfig):
-    if "disabled" in pkgConfig and pkgConfig["disabled"]:
-        return
-
-    if "enabled" in pkgConfig and not pkgConfig["enabled"]:
-        return
-
-    # ensure that we have a valid package list
-    pkgList = []
-    if "pkgs" in pkgConfig:
-        pkgList = pkgConfig["pkgs"]
-    elif "pkg" in pkgConfig:
-        pkgList = pkgConfig["pkg"]
-    pkgList = cleanPackageInput(pkgList)
-    if not pkgList:
-        utils.eprint("ERROR: Invalid package config received (no valid package list found)")
-        return
-
-    # check that before is valid, if it exists
-    before = None
-    if "before" in pkgConfig:
-        before = pkgConfig["before"]
-        if not callable(before) and not utils.isString(before):
-            utils.eprint("ERROR: Invalid package config received (value provided as before is not callable nor a string)")
-            return
-
-    # check that after is valid, if it exists
-    after = None
-    if "after" in pkgConfig:
-        after = pkgConfig["after"]
-        if not callable(after) and not utils.isString(after):
-            utils.eprint("ERROR: Invalid package config received (value provided as after is not callable nor a string)")
-            return
-
-    # check for copr definition and enable if found
-    if "copr" in pkgConfig:
-        copr = pkgConfig["copr"]
-
-        # ensure valid copr (is a string)
-        if not utils.isString(copr):
-            utils.eprint("ERROR: Invalid package config received (provided copr host is not a string)")
-            return
-
-        # run command to enable copr host if not already enabled
-        if not coprIsEnabled(copr):
-            coprCmd = f"sudo dnf copr enable {copr}"
-            print(coprCmd)
-            subprocess.run(coprCmd, shell=True)
-
-    if before:
-        if callable(before):
-            before()
-        else:
-            subprocess.run(before, shell=True)
-
-    # install packages
-    installPackages(pkgList)
-
-    # run after command
-    if after:
-        if callable(after):
-            after()
-        else:
-            subprocess.run(after, shell=True)
-
 # install a list of flatpaks, passed as a list of strings
 def installFlatpaks(pakList, remote="flathub"):
-    installPackagesOrPaks(f"flatpak install {remote}", pakList)
-
-# install a special package
-def installSpecialFlatpaks(pakConfig):
-    # ensure that we have a valid package list
-    pakList = []
-    if "flatpaks" in pakConfig:
-        pakList = pakConfig["flatpaks"]
-    elif "flatpak" in pakConfig:
-        pakList = pakConfig["flatpak"]
-    pakList = cleanPackageInput(pakList)
-    if not pakList:
-        utils.eprint("ERROR: Invalid flatpak config received (no valid flatpak list found)")
-        return
-
-    # check that after is valid, if it exists
-    after = None
-    if "after" in pakConfig:
-        after = pakConfig["after"]
-        if not callable(after) and not utils.isString(after):
-            utils.eprint("ERROR: Invalid flatpak config received (value provided as after is not callable nor a string)")
-            return
-
-    # check for remote definition
-    remote = "flathub"
-    if "remote" in pakConfig:
-        remote = pakConfig["remote"]
-
-        # ensure valid copr (is a string)
-        if not utils.isString(remote):
-            utils.eprint("ERROR: Invalid flatpak config received (provided flatpak remote is not a string)")
-            return
-
-    # install packages
-    installFlatpaks(pakList, remote=remote)
-
-    # run after command
-    if after:
-        if callable(after):
-            after()
-        else:
-            subprocess.run(after, shell=True)
+    print(f"flatpak install {remote} {" ".join(pakList)}")
+    subprocess.run([
+        "flatpak",
+        "install",
+        remote,
+        *pakList
+    ])
 
 def enableFlatpakRemotes(remotes):
     for remote in remotes:
@@ -202,7 +70,13 @@ def enableFlatpakRemotes(remotes):
 
         cmd = f"flatpak remote-add --if-not-exists {remote["name"]} {remote["url"]}"
         print(cmd)
-        subprocess.run(cmd, shell=True)
+        subprocess.run([
+            "flatpak",
+            "remote-add",
+            "--if-not-exists",
+            remote["name"],
+            remote["url"]
+        ])
 
 # sets up rpm fusion nonfree
 def setupRpmFusion():
@@ -211,36 +85,23 @@ def setupRpmFusion():
         "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm",
     ]
     print("Setting up RPM Fusion...")
-    installPackages(rpmPkgs)
+
+    cmd = f"sudo dnf install -y {" ".join(rpmPkgs)}"
+    print(cmd)
+    subprocess.run(cmd, shell=True)
+
     print("RPM Fusion Installed...")
 
-# runs the setup steps for downloading a module's packages
-def setupModulePackages(module):
-    if not hasattr(module, "pkgs"):
-        return
-
-    # the list of "normal" packages
-    basePkgs = list(filter(utils.isString, module.pkgs))
-
-    # ensure git is installed, needed so config can be saved easily
-    basePkgs.append("git")
-
-    # install normal packages
-    installPackages(basePkgs)
-
-    # the list of "special" packages with extra instructions
-    specialPkgs = list(filter(utils.isDict,module.pkgs))
-
-    # install special packages
-    for pkgConfig in specialPkgs:
-        installSpecialPackage(pkgConfig)
-
-# runs the package setup steps for all provided modules
 def setupPackages(module_list):
     print("Installing packages...")
 
+    pkg_list = [ "git", "flatpak" ]
+
     for module in module_list:
-        setupModulePackages(module)
+        if hasattr(module, "pkgs"):
+            pkg_list += module.pkgs
+
+    package_manager.installPackages(pkg_list, self_packages.packages)
 
     print("Package installation complete.")
 
@@ -262,21 +123,10 @@ def setupModuleFlatpaks(module):
     # install "normal" flatpaks
     installFlatpaks(basePaks)
 
-    # the list of "special" flatpaks with extra instructions
-    specialPaks = list(filter(utils.isDict, module.flatpaks))
-
-    # install special packages
-    for pakConfig in specialPaks:
-        installSpecialFlatpaks(pakConfig)
-
 # runs the steps for installing flatpaks
 def setupFlatpaks(module_list):
-    # ensure flatpak is installed
-    print("Installing flatpak...")
-    installPackages("flatpak")
-    print("Flatpak Installed...")
-
     print("Enabling Flatpak remotes...")
+
     # ensure flathub is installed
     enableFlatpakRemotes([
         {
@@ -286,11 +136,14 @@ def setupFlatpaks(module_list):
     ])
     for module in module_list:
         setupModuleFlatpakRemotes(module)
+
     print("Flatpak remotes enabled")
 
     print("Installing flatpaks...")
+
     for module in module_list:
         setupModuleFlatpaks(module)
+
     print("Flatpaks installed.")
 
 # the callback function used to run file after-copy functions
@@ -376,7 +229,12 @@ def installFontByPath(path):
     outputPath = os.path.join(str(fontDir), name)
 
     def installZip(path):
-        subprocess.run(f"unzip {str(path)} -d {outputPath}", shell=True)
+        subprocess.run([
+            "unzip",
+            str(path),
+            "-d",
+            outputPath
+        ])
 
     installRouter = {
         ".zip": installZip
@@ -393,7 +251,7 @@ def installModuleFonts(module):
         return
 
     fontDir = str(Path.home() / ".local/share/fonts")
-    subprocess.run(f"mkdir -p {fontDir}", shell=True)
+    subprocess.run(["mkdir", "-p", fontDir])
 
     for url in module.fontUrls:
         if not utils.isString(url):
@@ -401,7 +259,7 @@ def installModuleFonts(module):
             break;
         
         with tempfile.TemporaryDirectory() as tempDir:
-            subprocess.run(f"curl --output-dir {tempDir} -LO {url}", shell=True)
+            subprocess.run(["curl", "--output-dir", tempDir, "-LO", url])
 
             files = list(Path(tempDir).glob('*'))
 
@@ -419,13 +277,13 @@ def setupFonts(module_list):
     for module in module_list:
         installModuleFonts(module)
 
-    subprocess.run("fc-cache -f -v", shell=True)
+    subprocess.run(["fc-cache", "-f", "-v"])
 
     print("Font setup complete")
 
 # runs the after function in module.after()
 def runModulePostSetup(module):
-    afterFunc = getattr(options, "after", None)
+    afterFunc = getattr(module, "after", None)
     if callable(afterFunc):
         afterFunc()
 
@@ -449,21 +307,8 @@ def setupAll(module_list):
     setupHomeDirectories(module_list)
     runPostSetup(module_list)
 
-def runSetup(show_prompt=True):
+def runSetup(mode):
     module_list = importEnabledModules()
-
-    prompt = ("Press a key to select a setup option:\n"
-        "a - set up all (excluding disabled modules)\n"
-        "h - set up home directories only\n"
-        "s - set up system directories only\n"
-        "f - set up fonts only\n"
-        "k - set up flatpaks only\n"
-        "p - set up packages only\n"
-        "r - set up rpm fusion\n"
-        "z - run post setup only\n"
-        "q - quit\n")
-    if not show_prompt:
-        prompt = ""
 
     cancelWarning = "Setup Cancelled."
 
@@ -479,58 +324,7 @@ def runSetup(show_prompt=True):
     }
 
     try:
-        char = None
-        while char != "q":
-            char = input(prompt)
-
-            if char in actionMap:
-                actionMap[char]()
-                print("Quick Setup Complete!")
-                return
-        if char == "q":
-            print(cancelWarning)
+        actionMap[mode]()
+        print("Quick Setup Complete!")
     except KeyboardInterrupt:
         print(cancelWarning)
-
-def main():
-    help_message = '''Usage: python setup.py [FLAGS...]
-valid FLAGS are:
-\t--help - print this message
-\t--ensure-config - ensure that the config file is defined
-\t--redefine-config - modify which modules are enabled via a CLI
-\t--no-prompt - hide the prompt to select a setup option
-'''
-
-    # validate passed flag arguments
-    valid_flags = {
-        "--help",
-        "--ensure-config",
-        "--redefine-config",
-        "--no-prompt",
-    }
-    flag_list = sys.argv[1:]
-    for arg in flag_list:
-        if arg not in valid_flags:
-            print(help_message)
-            return
-
-    # determine which flags are used
-    flag_set = set(flag_list)
-
-    if "--help" in flag_set:
-        print(help_message)
-        return
-
-    if "--redefine-config" in flag_set:
-        utils.listEnabledModules(redefine=True)
-        return
-
-    if "--ensure-config" in flag_set:
-        utils.listEnabledModules()
-        return
-
-    # run setup if not blocked by a flag
-    runSetup(show_prompt = "--no-prompt" not in flag_set)
-
-if __name__ == "__main__":
-    main()

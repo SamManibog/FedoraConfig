@@ -3,14 +3,36 @@ import tempfile
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 import configparser
+import importlib
+import re
 
 import putils
 from putils import Copy
 from putils import Script
 from putils import Symlink
 
-import git_pkg_scheme
-import github_pkg_scheme
+import package_schemes.git
+import package_schemes.github
+import package_schemes.custom
+
+class PackageScheme:
+    def __init__(self, verifyConfig, download, needsUpdate):
+        self.verifyConfig = verifyConfig
+        self.download = download
+        self.needsUpdate = needsUpdate
+
+def importSchemes():
+    schemes_path = Path(__file__).parent / "package_schemes/"
+
+    schemes = {}
+
+    scheme_names = [file.stem for file in schemes_path.iterdir() if file.is_file()]
+
+    for scheme in scheme_names:
+        mod = importlib.import_module(f".{scheme}", package="package_schemes")
+        schemes[scheme] = mod
+
+    return schemes
 
 # ways packages can be downloaded
 # each should have a field:
@@ -18,18 +40,27 @@ import github_pkg_scheme
 #   download - a function to download a package based on the passed specification
 #   needs_update - a function to check if a package needs to be updated, based on its lockfile data
 #   (optional) fields - a list of fields that the scheme must have
-PKG_SCHEMES = {
-    "git": {
-        "verify_config": git_pkg_scheme.verifyConfig,
-        "download": git_pkg_scheme.downloadRepo,
-        "needs_update": git_pkg_scheme.needsUpdate,
-    },
-    "github": {
-        "verify_config": github_pkg_scheme.verifyConfig,
-        "download": github_pkg_scheme.downloadRepo,
-        "needs_update": github_pkg_scheme.needsUpdate,
-    },
-}
+PKG_SCHEMES = importSchemes()
+
+#{
+#    "git": {
+#        "verify_config": git.verifyConfig,
+#        "download": git.downloadRepo,
+#        "needs_update": git.needsUpdate,
+#    },
+#
+#    "github": {
+#        "verify_config": github.verifyConfig,
+#        "download": github.downloadRepo,
+#        "needs_update": github.needsUpdate,
+#    },
+#
+#    "custom": {
+#        "verify_config": custom.verifyConfig,
+#        "download": custom.downloadRepo,
+#        "needs_update": custom.needsUpdate,
+#    },
+#}
 
 # runs a function on the list of argument lists to the given function on multiple threads
 def multithreadCalls(func, arguments, max_workers=3):
@@ -61,7 +92,7 @@ def verifyPackage(name, pkg_dictionary):
     if "scheme_config" not in pkg:
         raiseError(f"Invalid package '{name}' is missing scheme config.")
 
-    config_verification = pkg_scheme["verify_config"](pkg["scheme_config"])
+    config_verification = pkg_scheme.verifyConfig(pkg["scheme_config"])
     if config_verification:
         raiseError(f"Package '{name}' has invalid scheme config: {config_verification}")
 
@@ -118,13 +149,13 @@ def getSelfDefinedDnfDependents(name, pkg_dictionary):
         if "dependencies" in pkg:
             for dep in pkg["dependencies"]:
                 if dep in pkg_dictionary:
-                    stack.push(dep)
+                    stack.append(dep)
                 else:
                     deps.add(dep)
     return deps
 
 # installs the given self-defined packages (skips dnf dependencies)
-def installSelfDefinedPackage(name, pkg_dictionary):
+def installSelfDefinedPackage(name, pkg_dictionary, lockdata):
     deps_by_depth = []
     next_queue = []
     deps_queue = []
@@ -164,10 +195,10 @@ def installSelfDefinedPackage(name, pkg_dictionary):
         pkg_list = deps_by_depth.pop()
 
         for pkg in pkg_list:
-            installPackageNoDeps(pkg, pkg_dictionary[pkg])
+            installPackageNoDeps(pkg, pkg_dictionary[pkg], lockdata)
 
 # installs the given package, but does not install dependencies
-def installPackageNoDeps(name, pkg):
+def installPackageNoDeps(name, pkg, lockdata):
     if "installed" in pkg:
         return
 
@@ -180,10 +211,12 @@ def installPackageNoDeps(name, pkg):
     subprocess.run(["mkdir", "-p", putils.PACKAGE_FOLDER])
 
     # download stuff
-    download_protocol = PKG_SCHEMES[pkg["scheme"]]["download"]
+    download_protocol = PKG_SCHEMES[pkg["scheme"]].download
     download_result = download_protocol(name, pkg["scheme_config"])
     if download_result == None:
         return
+
+    lockdata[name] = download_result
 
     if "build" in pkg:
         build_cmds = pkg["build"]
@@ -212,7 +245,7 @@ def installPackageNoDeps(name, pkg):
     print(f"Package '{name}' installed.")
 
 # installs the given self-defined packages (skips dnf dependencies)
-def installSelfDefinedPackages(names, pkg_dictionary):
+def installSelfDefinedPackages(names, pkg_dictionary, lockdata):
     dnf_deps = set()
     for name in names:
         dnf_deps |= getSelfDefinedDnfDependents(name, pkg_dictionary)
@@ -229,40 +262,46 @@ def installSelfDefinedPackages(names, pkg_dictionary):
         ])
 
     for name in names:
-        installSelfDefinedPackage(name, pkg_dictionary)
-
-def formatLockfileName(scheme):
-    return f"{scheme}-lock.ini"
-
-def loadSchemeLockData(scheme):
-    lockdata = configparser.ConfigParser()
-    lockdata.read(putils.PACKAGE_LOCK_FOLDER / formatLockfileName(scheme))
-    return lockdata
+        installSelfDefinedPackage(name, pkg_dictionary, lockdata)
 
 # loads all lockfile data into a config, organized by scheme
-def loadAllLockData():
-    config = {}
+def loadLockData():
+    lockdata = configparser.ConfigParser()
+    lockdata.read(putils.PACKAGE_LOCKFILE)
+    return lockdata
 
-    for scheme in PKG_SCHEMES.keys():
-        config[scheme] = loadSchemeLockData(scheme)
+# checks if a self-defined package is updatable
+def isPackageUpdatable(pkg, pkg_dictionary, lockdata):
+    scheme = pkg_dictionary[pkg]["scheme"]
+    if pkg in lockdata:
+        check_func = PKG_SCHEMES[scheme].needsUpdate
+        return check_func(lockdata[pkg], pkg_dictionary[pkg]["scheme_config"])
+    else:
+        return True
 
-    return config
+# checks if a copr is enabled by name
+def coprIsEnabled(copr):
+    coprList = subprocess.run(
+        "dnf copr list",
+        capture_output=True,
+        text=True,
+        shell=True
+    ).stdout
 
-# checks all packages for updates, returning the number of updates available
-def checkAllUpdates(lockData):
-    total = 0
+    coprRegexUncompiled = f"{copr}.*"
+    coprRegex = re.compile(coprRegexUncompiled)
+    match = re.search(coprRegex, coprList)
 
-    for scheme in PKG_SCHEMES.keys():
-        check_func = PKG_SCHEMES[scheme]["needs_update"]
-        scheme_pkgs = lockData[scheme]
-        for package_name in scheme_pkgs.sections():
-            if check_func(scheme_pkgs[package_name]):
-                total += 1
-
-    return total
+    if match:
+        disabledRegex = r"\(disabled\)"
+        return not re.search(disabledRegex, match.group(0))
+    else:
+        return False
 
 # install all packages from the given list
-def installPackages(pkgs, pkg_dictionary):
+def installPackages(pkgs, pkg_dictionary, force=False):
+    lockdata = loadLockData()
+
     befores = []
     coprs = []
     dnf_pkgs = []
@@ -273,17 +312,19 @@ def installPackages(pkgs, pkg_dictionary):
     for pkg in pkgs:
         if isinstance(pkg, str):
             if pkg in pkg_dictionary:
-                self_pkgs.append(pkg)
+                if force or isPackageUpdatable(pkg, pkg_dictionary, lockdata):
+                    self_pkgs.append(pkg)
             else:
                 dnf_pkgs.append(pkg)
 
         elif isinstance(pkg, dict):
             if pkg["pkg"] in pkg_dictionary:
-                self_pkgs.append(pkg["pkg"])
+                if force or isPackageUpdatable(pkg["pkg"], pkg_dictionary, lockdata):
+                    self_pkgs.append(pkg["pkg"])
             else:
                 dnf_pkgs.append(pkg["pkg"])
 
-            if "copr" in pkg:
+            if "copr" in pkg and not coprIsEnabled(pkg["copr"]):
                 coprs.append(pkg["copr"])
             if "before" in pkg:
                 befores.append(pkg["before"])
@@ -312,16 +353,12 @@ def installPackages(pkgs, pkg_dictionary):
             *dnf_pkgs
         ])
 
-    installSelfDefinedPackages(self_pkgs, pkg_dictionary)
+    installSelfDefinedPackages(self_pkgs, pkg_dictionary, lockdata)
 
     for after in afters:
         print(after)
         subprocess.run(after, shell=True)
 
-# print(getOutputFolderName(URL))
-# print(gitNeedsUpdate(URL, HASH))
-# print(multithreadCalls(gitNeedsUpdate, arg_list_thing))
-
-import self_packages
-
-installPackages([ "theHarvester", "nikto", "Responder" ], self_packages.packages)
+    subprocess.run(["mkdir", "-p", putils.PACKAGE_LOCKFILE.parent])
+    with open(putils.PACKAGE_LOCKFILE, "w") as f:
+        lockdata.write(f)

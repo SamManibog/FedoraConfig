@@ -9,8 +9,8 @@ BINARY_FOLDER = Path.home() / ".local/bin/"
 # the folder in which to store package repositories
 PACKAGE_FOLDER = Path.home() / ".local/opt/"
 
-# package lock folder
-PACKAGE_LOCK_FOLDER = Path.home() / ".config/FedoraConfig/locks"
+# package lock file
+PACKAGE_LOCKFILE = Path.home() / ".config/FedoraConfig/locks.ini"
 
 class Copy:
     def __init__(self, name, target):
