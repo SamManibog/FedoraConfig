@@ -1,6 +1,7 @@
 from putils import Copy
 from putils import Script
 from putils import Symlink
+import putils
 
 import subprocess
 import tempfile
@@ -15,7 +16,7 @@ def pkgMetasploitDownload(name, cfg):
  
         subprocess.run(get_installer_cmd, shell=True)
         subprocess.run(install_cmd, shell=True)
-        subprocess.run(f"ln -f -s /opt/metasploit-framework/bin/msfconsole ~/.local/bin/msfconsole", shell=True)
+        subprocess.run(f"ln -f -s /opt/metasploit-framework/bin/msfconsole {putils.BINARY_FOLDER / "msfconsole"}", shell=True)
 
     return {}
 
