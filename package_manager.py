@@ -123,9 +123,8 @@ def installSymlink(sym, package_dir):
     target = str(Path(package_dir) / sym.target)
     link = str(putils.BINARY_FOLDER / sym.name)
 
-    subprocess.run(["rm", "-r", target])
     subprocess.run(["chmod", "+x", target])
-    subprocess.run(["ln", "-s", target, link])
+    subprocess.run(["ln", "-f", "-s", target, link])
 
 def installScript(script, package_dir):
     target = str(Path(package_dir) / script.target)
