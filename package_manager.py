@@ -136,24 +136,6 @@ def installScript(script, package_dir):
         file.write(content)
     subprocess.run(["chmod", "+x", binary])
 
-# gets the set of dnf package dependencies from a self-defined package
-def getSelfDefinedDnfDependents(name, pkg_dictionary):
-    deps = set()
-
-    stack = [ name ]
-
-    while len(stack) > 0:
-        pkg_name = stack.pop()
-        pkg = pkg_dictionary[pkg_name]
-        
-        if "dependencies" in pkg:
-            for dep in pkg["dependencies"]:
-                if dep in pkg_dictionary:
-                    stack.append(dep)
-                else:
-                    deps.add(dep)
-    return deps
-
 # installs the given self-defined packages (skips dnf dependencies)
 def installSelfDefinedPackage(name, pkg_dictionary, lockdata):
     deps_by_depth = []
@@ -244,26 +226,6 @@ def installPackageNoDeps(name, pkg, lockdata):
     pkg["installed"] = True
     print(f"Package '{name}' installed.")
 
-# installs the given self-defined packages (skips dnf dependencies)
-def installSelfDefinedPackages(names, pkg_dictionary, lockdata):
-    dnf_deps = set()
-    for name in names:
-        dnf_deps |= getSelfDefinedDnfDependents(name, pkg_dictionary)
-    dnf_deps = list(dnf_deps)
-
-    if len(dnf_deps) > 0:
-        print(f"sudo dnf install -y {" ".join(dnf_deps)}")
-        subprocess.run([
-            "sudo",
-            "dnf",
-            "install",
-            "-y",
-            *dnf_deps
-        ])
-
-    for name in names:
-        installSelfDefinedPackage(name, pkg_dictionary, lockdata)
-
 # loads all lockfile data into a config, organized by scheme
 def loadLockData():
     lockdata = configparser.ConfigParser()
@@ -353,10 +315,12 @@ def installPackages(pkgs, pkg_dictionary, force=False):
             "dnf",
             "install",
             "-y",
+            "--skip-broken",
             *dnf_pkgs
         ])
 
-    installSelfDefinedPackages(self_pkgs, pkg_dictionary, lockdata)
+    for pkg in self_pkgs:
+        installSelfDefinedPackage(pkg, pkg_dictionary, lockdata)
 
     for after in afters:
         if callable(after):
