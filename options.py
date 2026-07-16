@@ -106,6 +106,7 @@ flatpakRemotes = [
 flatpaks = [
     "com.spotify.Client",
     "org.onlyoffice.desktopeditors",
+    "net.giuspen.cherrytree",
 ]
 
 # the urls to fetch fonts from

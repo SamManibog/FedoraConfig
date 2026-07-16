@@ -24,21 +24,18 @@ def pkgMetasploitNeedsUpdate(ini, cfg):
     return not Path("/opt/metasploit-framework/bin/msfconsole").exists()
 
 packages = {
-    "theHarvester": {
-        "dependencies": [ 
-            "uv",
-            "python3-netaddr",
+    "metasploit": {
+        "dependencies": [
+            "ruby",
+            "ruby-devel",
+            "zlib-devel",
+            "@development-tools",
         ],
-        "scheme": "github",
+        "scheme": "custom",
         "scheme_config": {
-            "user": "laramies",
-            "repo": "theHarvester",
+            "download": pkgMetasploitDownload,
+            "needs_update": pkgMetasploitNeedsUpdate,
         },
-        "build": "uv sync",
-        "exes": [
-            Script("theHarvester", ".", 'uv run --project {target} theHarvester "$@"'),
-            Script("restfulHarvest", ".", 'uv run --project {target} restfulHarvest "$@"'),
-        ],
     },
 
     "nikto": {
@@ -70,17 +67,25 @@ packages = {
         ],
     },
 
-    "metasploit": {
-        "dependencies": [
-            "ruby",
-            "ruby-devel",
-            "zlib-devel",
-            "@development-tools",
+    "seclists": {
+        "scheme": "git",
+        "scheme_config": "https://github.com/danielmiessler/SecLists",
+    },
+
+    "theHarvester": {
+        "dependencies": [ 
+            "uv",
+            "python3-netaddr",
         ],
-        "scheme": "custom",
+        "scheme": "github",
         "scheme_config": {
-            "download": pkgMetasploitDownload,
-            "needs_update": pkgMetasploitNeedsUpdate,
+            "user": "laramies",
+            "repo": "theHarvester",
         },
-    }
+        "build": "uv sync",
+        "exes": [
+            Script("theHarvester", ".", 'uv run --project {target} theHarvester "$@"'),
+            Script("restfulHarvest", ".", 'uv run --project {target} restfulHarvest "$@"'),
+        ],
+    },
 }

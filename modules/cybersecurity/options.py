@@ -20,22 +20,33 @@ import subprocess
 #   2) contain a key "after" which may be a bash command provided as a string or a callable
 #   3) contain a key "before" which may be a bash command provided as a string or a callable
 pkgs = [
-    # network tools
+    # scanning tools
     "nmap",
     "arp-scan",
     "net-tools",
     "netcat",
     "nikto",
+    "wireshark",
+    "sherlock-project",
+    "whatweb",
+    "gobuster",
 
-    # password cracking tools
+    # hash cracking tools
     "hashcat",
     "hydra",
+    "john",
+    "aircrack-ng",
+    "medusa",
+    "seclists",
 
-    # pentesting tools
+    # exploitation tools
     "Responder",
     "impacket",
     "theHarvester",
     "metasploit",
+
+    # vms
+    "virtualbox",
 ]
 
 # the list of flatpak remotes to add
@@ -53,6 +64,7 @@ flatpakRemotes = [
 #   1) contain a key "remote" to define the remote that holds the package (default is "flathub")
 #   2) contain a key "after" which may be a bash command provided as a string or a callable
 flatpaks = [
+    "org.ghidra_sre.Ghidra",
 ]
 
 # the urls to fetch fonts from
