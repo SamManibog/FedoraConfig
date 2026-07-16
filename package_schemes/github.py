@@ -4,6 +4,7 @@ import subprocess
 import tempfile
 import json
 
+import utils
 import putils
 
 def verifyConfig(cfg):
@@ -41,7 +42,7 @@ def download(name, cfg):
     version = meta["tag_name"]
     outputPath = putils.PACKAGE_FOLDER / name
 
-    putils.downloadZip(zip_url, outputPath)
+    utils.downloadZip(zip_url, outputPath)
 
     return {
         "version": version,

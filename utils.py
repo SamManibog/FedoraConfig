@@ -3,12 +3,12 @@
 import os
 import sys
 import subprocess
+import tempfile
 from pathlib import Path
 import filecmp
 import difflib
 import configparser
 
-CONFIG_PATH = Path.home() / ".config/FedoraConfig"
 MODULE_CONFIG_PATH = Path.home() / ".config/FedoraConfig/modules.ini"
 
 # check if an object is a string
@@ -224,7 +224,7 @@ def listEnabledModules(redefine=False):
     if Path(MODULE_CONFIG_PATH).exists() and not redefine:
         config.read(MODULE_CONFIG_PATH)
     else:
-        subprocess.run(["mkdir", "-p", CONFIG_PATH])
+        subprocess.run(["mkdir", "-p", MODULE_CONFIG_PATH.parent])
         config[configparser.UNNAMED_SECTION] = {}
         for module in promptEnableModules(defined):
             config.set(configparser.UNNAMED_SECTION, module, str(True))
@@ -251,3 +251,34 @@ def getModulePaths(module_list):
     paths.insert(0, Path(__file__).parent)
     return paths
 
+# downloads and extracts a zip file from a url to the specified directory
+def downloadZip(url, output_directory):
+    with tempfile.TemporaryDirectory() as downloadDir:
+        zipfile = None
+        try:
+            subprocess.run([
+                "curl",
+                "--output-dir", 
+                downloadDir,
+                "-LO", 
+                url
+            ])
+            zipfile = str(list(Path(downloadDir).glob('*'))[0])
+        except:
+            eprint(f"ERROR: Unable to download zipfile from {url}")
+
+        with tempfile.TemporaryDirectory() as unzipDir:
+            subprocess.run([
+                "unzip",
+                zipfile,
+                "-d",
+                unzipDir
+            ])
+
+            unzipped = list(Path(unzipDir).glob('*'))[0]
+
+            subprocess.run([
+                "mv",
+                str(unzipped),
+                str(output_directory)
+            ])
