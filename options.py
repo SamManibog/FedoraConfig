@@ -40,11 +40,14 @@ pkgs = [
     "swayidle",
     "swaylock",
     "swaybg",
-    "jq",
     "xdg-desktop-portal-gtk",
     "xdg-desktop-portal-gnome",
     "gnome-keyring",
     "nm-applet",
+
+    # cli tools
+    "jq",
+    "fzf",
 
     # creative software
     "obs-studio",
