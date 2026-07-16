@@ -123,6 +123,7 @@ def installSymlink(sym, package_dir):
     target = str(Path(package_dir) / sym.target)
     link = str(putils.BINARY_FOLDER / sym.name)
 
+    subprocess.run(["rm", "-r", target])
     subprocess.run(["chmod", "+x", target])
     subprocess.run(["ln", "-s", target, link])
 
@@ -335,8 +336,11 @@ def installPackages(pkgs, pkg_dictionary, force=False):
             raise ValueError("Invalid package definition found.")
 
     for before in befores:
-        print(before)
-        subprocess.run(before, shell=True)
+        if callable(before):
+            before()
+        else:
+            print(before)
+            subprocess.run(before, shell=True)
 
     for copr in coprs:
         coprCmd = f"sudo dnf copr enable {copr}"
@@ -356,8 +360,11 @@ def installPackages(pkgs, pkg_dictionary, force=False):
     installSelfDefinedPackages(self_pkgs, pkg_dictionary, lockdata)
 
     for after in afters:
-        print(after)
-        subprocess.run(after, shell=True)
+        if callable(after):
+            after()
+        else:
+            print(after)
+            subprocess.run(after, shell=True)
 
     subprocess.run(["mkdir", "-p", putils.PACKAGE_LOCKFILE.parent])
     with open(putils.PACKAGE_LOCKFILE, "w") as f:

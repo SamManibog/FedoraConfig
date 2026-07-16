@@ -2,6 +2,26 @@ from putils import Copy
 from putils import Script
 from putils import Symlink
 
+import subprocess
+import tempfile
+from pathlib import Path
+
+def pkgMetasploitDownload(name, cfg):
+    with tempfile.NamedTemporaryFile(delete_on_close=False, mode='w') as temp_file:
+        temp_file.close()
+
+        get_installer_cmd = f"curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > {temp_file.name}"
+        install_cmd = f"sudo bash {temp_file.name}"
+ 
+        subprocess.run(get_installer_cmd, shell=True)
+        subprocess.run(install_cmd, shell=True)
+        subprocess.run(f"ln -f -s /opt/metasploit-framework/bin/msfconsole ~/.local/bin/msfconsole", shell=True)
+
+    return {}
+
+def pkgMetasploitNeedsUpdate(ini, cfg):
+    return not Path("/opt/metasploit-framework/bin/msfconsole").exists()
+
 packages = {
     "theHarvester": {
         "dependencies": [ 
@@ -48,4 +68,18 @@ packages = {
             Script("Responder.py", "Responder.py", 'python {target} "$@"'),
         ],
     },
+
+    "metasploit": {
+        "dependencies": [
+            "ruby",
+            "ruby-devel",
+            "zlib-devel",
+            "@development-tools",
+        ],
+        "scheme": "custom",
+        "scheme_config": {
+            "download": pkgMetasploitDownload,
+            "needs_update": pkgMetasploitNeedsUpdate,
+        },
+    }
 }

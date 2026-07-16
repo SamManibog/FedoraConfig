@@ -9,6 +9,9 @@
 #   				                        EDIT THIS FILE
 # =======================================================================================================
 
+import tempfile
+import subprocess
+
 # the list of packages to be installed
 # can be provided as a string or a dictionary
 # if a dictionary, it must contain a key "pkg" or "pkgs" that is either a string or list of string packages
@@ -22,14 +25,17 @@ pkgs = [
     "arp-scan",
     "net-tools",
     "netcat",
-    "impacket",
-    "theHarvester",
     "nikto",
-    "Responder",
 
     # password cracking tools
     "hashcat",
     "hydra",
+
+    # pentesting tools
+    "Responder",
+    "impacket",
+    "theHarvester",
+    "metasploit",
 ]
 
 # the list of flatpak remotes to add
